@@ -1,14 +1,87 @@
 async = require 'async'
 util = require 'util'
 logger = require 'winston'
+settings = require '../settings'
 
 filterFields = (params) ->
     fields = {}
     fields[key] = val for own key, val of params when key in ['proto', 'token', 'lang', 'badge', 'version', 'category', 'contentAvailable']
     return fields
 
-exports.setupRestApi = (app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus) ->
+exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus) ->    
     authorize ?= (realm) ->
+
+    app.post '/apps/register', (req, res) ->
+        
+        appId = req.body.appId
+        appDebug = if req.body.appDebug == 'S' then true else false
+        apn_name = "nenhum"
+
+        if appId == 'br.com.mobilemind.gym.college'
+            if appDebug
+                apn_name = "4gym"
+            else
+                apn_name = "4gym-college"
+
+        if appId == 'br.com.mobilemind.gym'
+            apn_name = "4gym"
+
+        data = {
+            ios_apn_name: apn_name,
+            ios_app_id: appId,
+            ios_app_hash: req.body.appHash,
+            ios_app_username: req.body.appUsername,
+            ios_app_debug: appDebug
+        }
+
+        console.log("####################### data")
+        console.log(JSON.stringify(data))
+        console.log("####################### data")
+
+        settings.AppConfig.findOne { ios_app_id: data.ios_app_id }, (err, appConfig) ->
+
+            if err
+                res.json status: 500
+                return
+
+            if appConfig
+                settings.AppConfig.update {_id: appConfig._id}, data, (err, numAffected) ->
+                    if err
+                        console.log("#### update err=" + err)
+                        res.json status: 500
+                    else
+                        console.log("#### update sucesso")
+                        res.json status: 200
+            else
+                appConfig = new settings.AppConfig(data)
+                appConfig.save (err)->
+                    if err
+                        console.log("#### save err=" + err)
+                        res.json status: 500
+                    else
+                        console.log("#### save sucesso")
+                        res.json status: 200
+
+
+        
+
+    app.get '/apps/all', (req, res) ->    
+
+        settings.AppConfig.find (err, items) ->
+            if err
+                res.json error: err
+            else
+                list = []
+                for it in items
+                    list.push({
+                        ios_apn_name: it.ios_apn_name,
+                        ios_app_id: it.ios_app_id,
+                        ios_app_hash: it.ios_app_hash,
+                        ios_app_username: it.ios_app_username,
+                        ios_app_debug: it.ios_app_debug
+                    })
+                res.json list
+        
 
     # subscriber registration
     app.post '/subscribers', authorize('register'), (req, res) ->

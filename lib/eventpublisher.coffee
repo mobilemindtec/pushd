@@ -6,6 +6,8 @@ class EventPublisher extends events.EventEmitter
     constructor: (@pushServices) ->
 
     publish: (event, data, cb) ->
+
+        console.log('##### event publish ')
         try
             payload = new Payload(data)
             payload.event = event
@@ -18,6 +20,7 @@ class EventPublisher extends events.EventEmitter
         @.emit(event.name, event, payload)
 
         event.exists (exists) =>
+            
             if not exists
                 logger.verbose "Tried to publish to a non-existing event #{event.name}"
                 cb(0) if cb
@@ -33,9 +36,9 @@ class EventPublisher extends events.EventEmitter
                 return
 
             logger.verbose "Pushing message for event #{event.name}"
-            logger.silly "data = #{JSON.stringify data}"
-            logger.silly 'Title: ' + payload.localizedTitle('en')
-            logger.silly payload.localizedMessage('en')
+            logger.verbose "data = #{JSON.stringify data}"
+            logger.verbose 'Title: ' + payload.localizedTitle('en')
+            logger.verbose payload.localizedMessage('en')
 
             protoCounts = {}
             event.forEachSubscribers (subscriber, subOptions, done) =>

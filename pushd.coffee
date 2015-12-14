@@ -128,7 +128,7 @@ authorize = (realm) ->
     else
         return (req, res, next) -> next()
 
-require('./lib/api').setupRestApi(app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus)
+require('./lib/api').setupRestApi(redis, app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus)
 if eventSourceEnabled
     require('./lib/eventsource').setup(app, authorize, eventPublisher)
 
