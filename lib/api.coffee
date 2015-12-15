@@ -19,24 +19,25 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         apn_name = "nenhum"
         apn_name_general = "nenhum"
         apn_name_mobilemind = "nenhum"   
-        channels = ""     
+        channels = ""             
 
         if appId == 'br.com.mobilemind.gym.college'
             if appDebug
                 apn_name = "apns-4gym-dev"
+                channels = "4gym-dev,4gym-college-dev,mobilemind-dev"
             else
                 apn_name = "apns-4gym-college"
+                channels = "4gym,4gym-college,mobilemind"
 
-            channels = "4gym,4gym-college,mobilemind,4gym-dev"
 
 
         if appId == 'br.com.mobilemind.gym'
             if appDebug
                 apn_name = "apns-4gym-dev"                    
+                channels = "4gym-dev,mobilemind-dev"
             else
                 apn_name = "apns-4gym"   
-
-            channels = "4gym,mobilemind,4gym-dev"
+                channels = "4gym,mobilemind"
 
         data = {
             ios_apn_name: apn_name,
@@ -54,7 +55,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         console.log(JSON.stringify(data))
         console.log("####################### data")
 
-        settings.AppConfig.findOne { ios_app_id: data.ios_app_id }, (err, appConfig) ->
+        settings.AppConfig.findOne { ios_app_hash: data.ios_app_hash }, (err, appConfig) ->
 
             if err
                 res.json status: 500
