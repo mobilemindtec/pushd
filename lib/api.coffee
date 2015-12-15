@@ -2,6 +2,7 @@ async = require 'async'
 util = require 'util'
 logger = require 'winston'
 settings = require '../settings'
+eventModule = require './event'
 
 filterFields = (params) ->
     fields = {}
@@ -16,18 +17,33 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         appId = req.body.appId
         appDebug = if req.body.appDebug == 'S' then true else false
         apn_name = "nenhum"
+        apn_name_general = "nenhum"
+        apn_name_mobilemind = "nenhum"   
+        channels = ""     
 
         if appId == 'br.com.mobilemind.gym.college'
             if appDebug
-                apn_name = "4gym"
+                apn_name = "apns-4gym-dev"
             else
-                apn_name = "4gym-college"
+                apn_name = "apns-4gym-college"
+
+            channels = "4gym,4gym-college,mobilemind,4gym-dev"
+
 
         if appId == 'br.com.mobilemind.gym'
-            apn_name = "4gym"
+            if appDebug
+                apn_name = "apns-4gym-dev"                    
+            else
+                apn_name = "apns-4gym"   
+
+            channels = "4gym,mobilemind,4gym-dev"
 
         data = {
             ios_apn_name: apn_name,
+
+            ios_subscrible_id: "",
+            subscrible_channels: channels,
+
             ios_app_id: appId,
             ios_app_hash: req.body.appHash,
             ios_app_username: req.body.appUsername,
@@ -47,23 +63,62 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             if appConfig
                 settings.AppConfig.update {_id: appConfig._id}, data, (err, numAffected) ->
                     if err
-                        console.log("#### update err=" + err)
-                        res.json status: 500
+                        console.log("#### update err=#{err}")
+                        res.json status: 500, message: "#### update err=#{err}"
                     else
                         console.log("#### update sucesso")
-                        res.json status: 200
+                        res.json status: 200 
             else
                 appConfig = new settings.AppConfig(data)
-                appConfig.save (err)->
+                appConfig.save (err)-> # create new app client
                     if err
-                        console.log("#### save err=" + err)
-                        res.json status: 500
+                        console.log("#### save err=#{err}")
+                        res.json status: 500, message: "#### save err=#{err}"
                     else
                         console.log("#### save sucesso")
-                        res.json status: 200
+
+                        body = {
+                            proto: data.ios_apn_name
+                            token: req.body.appHash
+                            lang: "fr"
+                            badge: 0
+                            category: "show"
+                            contentAvailable: true                            
+                        }                        
+
+                        # create app subscriber
+                        subscribers body, res, (subscriber) ->
+
+                            if !subscriber
+                                res.json status: 500, message: 'not create subscriber'
+                                return
+
+                            console.log("### subscriber.id=#{subscriber.id}")
+                            settings.AppConfig.update {_id: appConfig._id}, {ios_subscrible_id: subscriber.id}, (erre, numAffected) ->
+                                if erre
+                                    console.log("### error on get subscriber id from data.apn_name=#{body.proto}")
+                                    res.json status: 301, message: "### error on get subscriber id from data.apn_name=#{body.proto}"
+                                else
+                                    res.json status: 200
+                            
+                            events = data.subscrible_channels.split(",")
+
+                            for eventName in events
+
+                                event = new eventModule.Event(redis, eventName)
+
+                                # create subscriber subscription
+                                subscriber.addSubscription event, 0, (added) ->
+                                    if added? # added is null if subscriber doesn't exist
+                                        if added    
+                                            console.log "# subscription created to event #{eventName}"
+                                        else
+                                            console.log "# subscription not created to event #{eventName}"
+                                    else
+                                        logger.error "No subscriber #{subscriber.id}"
+                                        console.log "# No subscriber #{subscriber.id}"
 
 
-        
 
     app.get '/apps/all', (req, res) ->    
 
@@ -75,6 +130,10 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                 for it in items
                     list.push({
                         ios_apn_name: it.ios_apn_name,
+    
+                        ios_subscrible_id: it.ios_subscrible_id,
+                        subscrible_channels: it.subscrible_channels,
+
                         ios_app_id: it.ios_app_id,
                         ios_app_hash: it.ios_app_hash,
                         ios_app_username: it.ios_app_username,
@@ -82,20 +141,52 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                     })
                 res.json list
         
+    app.get '/apps/delete/all', (req, res) ->    
+
+        settings.AppConfig.find (err, items) ->
+            if err
+                res.json error: err
+            else                
+                for it in items
+                    settings.AppConfig.remove {_id: it._id}, (errr) ->
+                        if errr
+                            res.json status: 'error'                            
+                            console.log("##### error = #{errr}")
+
+            
+                res.json status: 200
+
 
     # subscriber registration
-    app.post '/subscribers', authorize('register'), (req, res) ->
-        logger.verbose "Registering subscriber: " + JSON.stringify req.body
+
+    subscribers = (body, res, end) ->
+
+        logger.verbose "Registering subscriber: " + JSON.stringify body
         try
-            fields = filterFields(req.body)
+            fields = filterFields(body)
             createSubscriber fields, (subscriber, created) ->
                 subscriber.get (info) ->
-                    info.id = subscriber.id
+                    info.id = subscriber
+
+                    console.log("### subscriber.id=#{subscriber.id}")
+
+                    if end
+                        end(subscriber)
+                        return
+
                     res.header 'Location', "/subscriber/#{subscriber.id}"
                     res.json info, if created then 201 else 200
         catch error
             logger.error "Creating subscriber failed: #{error.message}"
+
+            if end
+                end()
+                return
+
             res.json error: error.message, 400
+
+    app.post '/subscribers', authorize('register'), (req, res) ->
+        subscribers(req.body, res)
 
     # Get subscriber info
     app.get '/subscriber/:subscriber_id', authorize('register'), (req, res) ->

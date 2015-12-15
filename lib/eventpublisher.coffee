@@ -44,6 +44,9 @@ class EventPublisher extends events.EventEmitter
             event.forEachSubscribers (subscriber, subOptions, done) =>
                 # action
                 subscriber.get (info) =>
+
+                    console.log("### proto=#{info.proto}")
+
                     if info?.proto?
                         if protoCounts[info.proto]?
                             protoCounts[info.proto] += 1
