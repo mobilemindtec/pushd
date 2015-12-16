@@ -23,7 +23,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
         if appId == 'br.com.mobilemind.gym.college'
             if appDebug
-                apn_name = "apns-4gym-dev"
+                apn_name = "apns-4gym-college-dev"
                 channels = "4gym-dev,4gym-college-dev,mobilemind-dev"
             else
                 apn_name = "apns-4gym-college"
