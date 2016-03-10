@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.0'
+
+    defaultConfig {
+        minSdkVersion 17
+        targetSdkVersion 22
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:23.1.0'
+    compile 'com.android.support:design:23.1.0'
+    compile 'com.google.android.gms:play-services:8.4.0'
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+task deleteOldJar(type: Delete) {
+    delete 'build/intermediates/bundles/release/pushplugin.jar'
+}
+
+
+task exportJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('release')
+    include('classes.jar')
+    // name the plugin
+    rename('classes.jar','pushplugin.jar')
+}
+
+exportJar.dependsOn(deleteOldJar, build)
