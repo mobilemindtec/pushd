@@ -7,7 +7,9 @@ class EventPublisher extends events.EventEmitter
 
     publish: (event, data, cb) ->
 
-        console.log('##### event publish ')
+        console.log('##### event publish ' )
+        console.log(cb)
+        
         try
             payload = new Payload(data)
             payload.event = event
@@ -66,6 +68,7 @@ class EventPublisher extends events.EventEmitter
                         cb(totalSubscribers) if cb
                 else
                     # if there is no subscriber, cleanup the event
+                    console.log("deletando!!!")
                     event.delete =>
                         cb(0) if cb
 

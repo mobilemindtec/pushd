@@ -1,0 +1,108 @@
+
+// dotpet
+curl -d proto=apns-dotpet \
+       -d token=556335da55162be0e51a5c7ae5589bf4b8ad6ef033be91d4d44dd4db1f4637b2 \
+       -d lang=fr \
+       -d badge=0 \
+       -d category=show \
+       -d contentAvailable=true \
+       http://192.168.1.8:3000/subscribers
+
+
+{
+  "proto": "apns-dotpet",
+  "token": "556335da55162be0e51a5c7ae5589bf4b8ad6ef033be91d4d44dd4db1f4637b2",
+  "lang": "fr",
+  "badge": 0,
+  "category": "show",
+  "contentAvailable": "true",
+  "updated": 1447363694,
+  "created": 1447363694,
+  "id": "6Qxq2vgBgrI"
+}
+
+// 4gym
+curl -d proto=apns-4gym \
+       -d token=61c6fe604187db88de0d11728087824c44b5d1bf836cc549c8f17a38efac85a8 \
+       -d lang=fr \
+       -d badge=0 \
+       -d category=show \
+       -d contentAvailable=true \
+       http://192.168.1.8:3000/subscribers
+
+{
+  "proto": "apns-4gym",
+  "token": "61c6fe604187db88de0d11728087824c44b5d1bf836cc549c8f17a38efac85a8",
+  "lang": "fr",
+  "badge": 0,
+  "category": "show",
+  "contentAvailable": "true",
+  "updated": 1447363900,
+  "created": 1447363900,
+  "id": "GknQui_-rm0"
+}   
+
+// inscrição
+curl -X POST http://192.168.1.8:3000/subscriber/6Qxq2vgBgrI/subscriptions/dotpet
+curl -X POST http://192.168.1.8:3000/subscriber/GknQui_-rm0/subscriptions/4gym
+
+// mensagem
+curl -d "msg=Dot%20Pet%20Test%20Message&sound=default" http://192.168.1.8:3000/event/dotpet
+curl -d msg=4GYM%20Test%20Message http://192.168.1.8:3000/event/4gym
+
+
+
+
+
+
+curl -d proto=apns-4gym-college \
+       -d token=863b5b7b964bbead758d1e29ede4b2b535a979893db850f47deef465858b9940 \
+       -d lang=fr \
+       -d badge=0 \
+       -d category=show \
+       -d contentAvailable=true \
+       http://192.168.1.4:3000/subscribers
+
+{
+  "proto": "apns-4gym-college",
+  "token": "863b5b7b964bbead758d1e29ede4b2b535a979893db850f47deef465858b9940",
+  "lang": "fr",
+  "badge": 0,
+  "category": "show",
+  "contentAvailable": "true",
+  "updated": 1449624143,
+  "created": 1449624143,
+  "id": "2djwFqnVvOw"
+}     
+
+curl -X POST http://192.168.1.4:3000/subscriber/2djwFqnVvOw/subscriptions/4gym-college
+curl -d msg=4GYM%20Test%20Message http://192.168.1.4:3000/event/4gym-college
+
+
+
+################### ANDROID ###################################
+
+
+
+// my book
+pushPlugin.register token=fc0onDJ-qXA:APA91bFJYTQATiBfPR7JBtEjq-Ih2Iw9psRDOwA4a7T6su-BwpUJ4eYJEEYDZHsA36qCBKaR2PGLlheanlJNz39rXrNd9iSkDffyuPpW0WHpBH1ycFvZ1Zx3cpt4hRRguRA8UIA8mU2H
+
+key = AIzaSyDcXFwAamjreTzgzA5cHyWcLa-L25ocIRI
+fc0onDJ-qXA:APA91bFJYTQATiBfPR7JBtEjq-Ih2Iw9psRDOwA4a7T6su-BwpUJ4eYJEEYDZHsA36qCBKaR2PGLlheanlJNz39rXrNd9iSkDffyuPpW0WHpBH1ycFvZ1Zx3cpt4hRRguRA8UIA8mU2H
+
+curl --header "Authorization: key=AIzaSyDcXFwAamjreTzgzA5cHyWcLa-L25ocIRI" \
+--header "Content-Type: application/json" \
+https://gcm-http.googleapis.com/gcm/send -d  "{ \"notification\": { \"title\": \"Portugal vs. Denmark\", \"text\": \"5 to 1\" }, \"to\" : \"fc0onDJ-qXA:APA91bFJYTQATiBfPR7JBtEjq-Ih2Iw9psRDOwA4a7T6su-BwpUJ4eYJEEYDZHsA36qCBKaR2PGLlheanlJNz39rXrNd9iSkDffyuPpW0WHpBH1ycFvZ1Zx3cpt4hRRguRA8UIA8mU2H\"}"
+
+
+// sigturismo
+
+key = AIzaSyC69eF20LvmMmjRd68Px9rKACYNyQ8CYcA
+token = eynK2g0UaiM:APA91bEcULAubfOv5fr4iuysvLywTtAptw_R3a8ZO9e4hReQLnljJ7yjv_qa7kPxHgoYGL9O8eW7EBn-inxZHypoG8I683DLelETEar_dKN7LnkQx3yFwgn2iJ2jxITvLtvwXYaSDETU
+
+curl --header "Authorization: key=AIzaSyC69eF20LvmMmjRd68Px9rKACYNyQ8CYcA" \
+--header "Content-Type: application/json" \
+https://gcm-http.googleapis.com/gcm/send -d  "{ \"notification\": { \"title\": \"Portugal vs. Denmark\", \"text\": \"5 to 1\" }, \"to\" : \"eynK2g0UaiM:APA91bEcULAubfOv5fr4iuysvLywTtAptw_R3a8ZO9e4hReQLnljJ7yjv_qa7kPxHgoYGL9O8eW7EBn-inxZHypoG8I683DLelETEar_dKN7LnkQx3yFwgn2iJ2jxITvLtvwXYaSDETU\"}"
+
+
+curl -d msg=atuaserra http://192.168.1.3:3000/event/sigturismo

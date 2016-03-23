@@ -9,53 +9,87 @@ filterFields = (params) ->
     fields[key] = val for own key, val of params when key in ['proto', 'token', 'lang', 'badge', 'version', 'category', 'contentAvailable']
     return fields
 
+# appId, appDebug, os, appHash, appUsername
 exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus) ->    
     authorize ?= (realm) ->
 
     app.post '/apps/register', (req, res) ->
         
         appId = req.body.appId
+        appUserEmail = req.body.appUserEmail || ""
+        appUserName = req.body.appUserName || ""
+        appHash = req.body.appHash
         appDebug = if req.body.appDebug == 'S' then true else false
-        apn_name = "nenhum"
+        server_name = "nenhum"
         apn_name_general = "nenhum"
-        apn_name_mobilemind = "nenhum"   
-        channels = ""             
+        apn_name_mobilemind = "nenhum"
+        app_type = req.body.os || 'ios'
+        channels = ""                 
+        channels_default = ['mobilemind']
 
-        if appId == 'br.com.mobilemind.gym.college'
+        if appId == 'com.sigturismo.atuaserra'
+            server_name_sufix = 'sigturismo-atua-serra'
+            channels_sufix = ['sigturismo', 'sigturismo-atua-serra']
+        
+        else if appId == 'br.com.mobilemind.mybookapp'
+            server_name_sufix = 'my-book-app'
+            channels_sufix = ['my-book-app']
+
+        else if appId == 'br.com.mobilemind.gym'
+            server_name_sufix = '4gym'
+            channels_sufix = ['4gym']
+        else if appId == 'br.com.mobilemind.gym.college'
+            server_name_sufix = '4gym-college'
+            channels_sufix = ['4gym-college', '4gym']
+            
+        
+        if appDebug            
+            for sufix in channels_sufix
+                channels += "#{sufix}-dev,"
+
+            for channel in channels_default
+                channels += "#{channel}-dev,"
+        else            
+            for sufix in channels_sufix
+                channels += "#{sufix},"
+
+            for channel in channels_default
+                channels += "#{channel},"
+
+        if app_type == 'ios'
+
             if appDebug
-                apn_name = "apns-4gym-college-dev"
-                channels = "4gym-dev,4gym-college-dev,mobilemind-dev"
+                server_name = "apns-#{server_name_sufix}-dev"
             else
-                apn_name = "apns-4gym-college"
-                channels = "4gym,4gym-college,mobilemind"
+                server_name = "apns-#{server_name_sufix}"        
 
-
-
-        if appId == 'br.com.mobilemind.gym'
+        else if app_type == 'android'
             if appDebug
-                apn_name = "apns-4gym-dev"                    
-                channels = "4gym-dev,mobilemind-dev"
+                server_name = "gcm-#{server_name_sufix}-dev"
             else
-                apn_name = "apns-4gym"   
-                channels = "4gym,mobilemind"
+                server_name = "gcm-#{server_name_sufix}"
+
+
 
         data = {
-            ios_apn_name: apn_name,
-
-            ios_subscrible_id: "",
+            server_name: server_name,
+            
+            subscrible_id: "",
+            
             subscrible_channels: channels,
 
-            ios_app_id: appId,
-            ios_app_hash: req.body.appHash,
-            ios_app_username: req.body.appUsername,
-            ios_app_debug: appDebug
+            app_id: appId,
+            app_hash: appHash,
+            app_user_email: appUserEmail,
+            app_debug: appDebug,
+            app_user_name: appUserName
         }
 
         console.log("####################### data")
         console.log(JSON.stringify(data))
         console.log("####################### data")
 
-        settings.AppConfig.findOne { ios_app_hash: data.ios_app_hash }, (err, appConfig) ->
+        settings.AppConfig.findOne { app_hash: data.app_hash }, (err, appConfig) ->
 
             if err
                 res.json status: 500
@@ -79,7 +113,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         console.log("#### save sucesso")
 
                         body = {
-                            proto: data.ios_apn_name
+                            proto: data.server_name
                             token: req.body.appHash
                             lang: "fr"
                             badge: 0
@@ -95,7 +129,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                                 return
 
                             console.log("### subscriber.id=#{subscriber.id}")
-                            settings.AppConfig.update {_id: appConfig._id}, {ios_subscrible_id: subscriber.id}, (erre, numAffected) ->
+                            settings.AppConfig.update {_id: appConfig._id}, {subscrible_id: subscriber.id}, (erre, numAffected) ->
                                 if erre
                                     console.log("### error on get subscriber id from data.apn_name=#{body.proto}")
                                     res.json status: 301, message: "### error on get subscriber id from data.apn_name=#{body.proto}"
@@ -130,15 +164,18 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                 list = []
                 for it in items
                     list.push({
-                        ios_apn_name: it.ios_apn_name,
-    
-                        ios_subscrible_id: it.ios_subscrible_id,
+                        server_name: it.server_name,
+                        
+                        subscrible_id: it.subscrible_id,
+                        
                         subscrible_channels: it.subscrible_channels,
 
-                        ios_app_id: it.ios_app_id,
-                        ios_app_hash: it.ios_app_hash,
-                        ios_app_username: it.ios_app_username,
-                        ios_app_debug: it.ios_app_debug
+                        app_id: it.app_id,
+                        app_hash: it.app_hash,
+                        app_user_email: it.app_user_email,
+                        app_debug: it.app_debug,
+                        app_user_name: it.app_user_name
+
                     })
                 res.json list
         
@@ -175,8 +212,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         end(subscriber)
                         return
 
-                    res.header 'Location', "/subscriber/#{subscriber.id}"
-                    res.json info, if created then 201 else 200
+                    res.header 'Location', "/subscriber/#{subscriber.id}"                    
+                    res.json {}, if created then 201 else 200
         catch error
             logger.error "Creating subscriber failed: #{error.message}"
 

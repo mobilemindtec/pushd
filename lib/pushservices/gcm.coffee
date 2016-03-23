@@ -59,6 +59,7 @@ class PushServiceGCM
         else
             error = result.error or result.errorCode
             if error is "NotRegistered" or error is "InvalidRegistration"
+                @logger?.warn("GCM #{error}")
                 @logger?.warn("GCM Automatic unregistration for subscriber #{subscriber.id}")
                 subscriber.delete()
             else

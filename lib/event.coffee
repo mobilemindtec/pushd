@@ -48,7 +48,7 @@ class Event
                 cb(exists)
 
     delete: (cb) ->
-        logger.verbose "Deleting event #{@name}"
+        logger.verbose "Deleting event #{@name}!"
 
         performDelete = () =>
             @redis.multi()
