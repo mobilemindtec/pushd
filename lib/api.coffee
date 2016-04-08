@@ -28,8 +28,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         channels_default = ['mobilemind']
 
         if appId == 'com.sigturismo.atuaserra'
-            server_name_sufix = 'sigturismo-atua-serra'
-            channels_sufix = ['sigturismo', 'sigturismo-atua-serra']
+            server_name_sufix = 'sigturismo-9'
+            channels_sufix = ['sigturismo', 'sigturismo-9']
         
         else if appId == 'br.com.mobilemind.mybookapp'
             server_name_sufix = 'my-book-app'
