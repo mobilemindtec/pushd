@@ -70,6 +70,12 @@ if settings.server?.auth? and not settings.server?.acl?
 app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }))
 app.use(bodyParser.json({ limit: '1mb' }))
 app.use(app.router)
+
+app.set('views', __dirname + '/views')
+app.set('view engine', 'jade')
+app.use(express.static(__dirname + '/public'))
+
+
 app.disable('x-powered-by');
 
 app.param 'subscriber_id', (req, res, next, id) ->
