@@ -131,6 +131,10 @@
 
   app.use(app.router);
 
+  app.set('views', __dirname + '/views');
+  app.set('view engine', 'jade');
+  app.use(express.static(__dirname + '/public'));
+
   app.disable('x-powered-by');
 
   app.param('subscriber_id', function(req, res, next, id) {

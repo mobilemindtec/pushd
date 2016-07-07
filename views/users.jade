@@ -1,0 +1,83 @@
+extend extra/layout
+
+block css-inline
+  style().
+    .status-metro{
+      margin: 2px;
+    }
+
+    .delete-all{
+      color: #FFFFFF !important;
+    }
+
+block content
+
+  .large-12.columns
+    .box
+      .box-header.bg-transparent
+
+        .pull-right.box-tools
+          .box-btn
+            a.tiny.button.alert.delete-all(href='/apps/delete/all') Remove all
+                                
+        // tools box
+        h3.box-title
+          i.icon-menu
+          span Registers
+      // /.box-header
+      .box-body(style='display: block;')
+        table(style='width:100%;')
+          thead
+            tr
+              th Server Name
+              th Subcrible ID
+              th APP ID
+              th Channels
+              th User Email
+              th User Name
+              th Debug
+              th Token
+          tbody
+            each it in items
+              tr
+                td #{it.server_name}
+                td #{it.subscrible_id}
+                td #{it.app_id}
+                td 
+                  each p in it.subscrible_channels.split(',')
+                    -if(p)
+                      span.status-metro.status-disabled #{p}
+                td #{it.app_user_email}
+                td #{it.app_user_name}
+                td
+                  -if(it.app_debug == true) 
+                    span.status-metro.status-active Yes
+                  -else
+                    span.status-metro.status-suspended Yes
+                td
+                  a.btn.btn-tiny.btn-token(href='#', data-token='#{it.app_hash}')
+                    i.fontello-key-1.tooltipstered
+
+
+    #tokenModal.reveal-modal.medium(data-reveal='')
+      h2 Token
+      p      
+      a.close-reveal-modal ×
+
+block js-inline
+  script().
+    $(document).ready(function(){
+
+      $('.delete-all').click(function(){
+        return confirm('Are you sure?')
+      })
+
+      $('.btn-token').click(function(){
+
+        $('#tokenModal').find('p').text($(this).data('token'))
+
+        $('#tokenModal').foundation('reveal', 'open');
+
+      })
+
+    })

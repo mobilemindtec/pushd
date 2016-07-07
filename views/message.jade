@@ -1,0 +1,196 @@
+extend extra/layout
+
+block content
+
+  .large-9.columns
+    form(data-abide='')
+      .name-field
+        label
+          | Channel 
+          small required
+          select#channel
+            option(value='none') Select a channel...
+            each it in channels
+              option(value='#{it}') #{it}          
+        small.error Channel is required
+      .email-field
+        label
+          | User 
+          small required
+          select#user
+            option(value='none') Select a user...
+        small.error User is required
+      .password-field
+        label
+          | Message 
+          small required
+          textarea#message(rows='3')
+        small.error Message is required
+      button.tiny.send Send  
+
+  .large-9.columns
+    .box.bg-light-green(style='display: none')
+      .box-header.bg-light-green
+        // tools box
+        .pull-right.box-tools
+          span.box-btn(data-widget='remove')
+            i.icon-cross
+        h3.box-title
+          i.text-white.icon-thumbs-up
+          span.text-white SUCCESS
+      // /.box-header
+      .box-body(style='display: block;')
+        p.text-white
+          strong Well done!
+          |  You successfully send this message.  
+
+    .box.bg-red(style='display: none')
+      .box-header.bg-red
+        // tools box
+        .pull-right.box-tools
+          span.box-btn(data-widget='remove')
+            i.icon-cross
+        h3.box-title
+          i.text-white.fontello-cancel-circled
+          span.text-white ERROR
+      // /.box-header
+      .box-body(style='display: block;')
+        p.text-white
+          strong Oh snap!
+          |  a error was found.
+
+block js-inline
+  script().
+    $(document).ready(function(){
+
+      $("#channel").on('change', function(){
+
+        var channel = $("#channel option").filter(':selected').val()
+
+        if(channel == 'none')
+          return
+
+        window.accounts = {}
+
+        $.ajax({
+          url: '/apps/users-by-channel?channel=' + channel,
+          contentType: 'application/json',                 
+          success: function(data){
+
+            $("#user").empty()
+
+            var opts = $('<option>', {value: 'none'})
+            opts.text('Select a user or all users...')
+            $("#user").append(opts)
+            
+            opts = $('<option>', {value: 'all'})
+            opts.text('All users')
+            $("#user").append(opts)
+
+            window.accounts = data
+
+            for(key in data){
+              opts = $('<option>', { value: key })
+              opts.text(key)            
+              $("#user").append(opts)
+            }
+
+
+          },
+          error:function(x, y, z){
+            console.log(x)
+            console.log(y)
+            console.log(z)
+          } 
+
+        })
+
+      })
+
+      $('.send').on('click', function(){
+        
+        var channel = $("#channel option").filter(':selected').val()
+        var user = $("#user option").filter(':selected').val()
+        var message = $("#message").val()
+        var error = false
+
+        $('.name-field').removeClass('.error')
+        $('.bg-light-green').hide(300)
+        $('.bg-red').hide(300)
+
+        if(channel == 'none'){
+          $("#channel").parent().parent().addClass('error')
+          $("#channel").parent().parent().find('.error').show(500)
+          error = true
+        }
+
+        if(user == 'none'){
+          $("#user").parent().parent().addClass('error')
+          $("#user").parent().parent().find('.error').show(500)
+          error = true
+        }
+
+        if(!message || message.trim() == ""){
+          $("#message").parent().parent().addClass('error')
+          $("#message").parent().parent().find('.error').show(500)
+          error = true        
+        }
+
+        if(error)
+          return false
+
+        if(channel.indexOf('-dev') == -1){
+          if(!confirm('Você está enviando uma mensagem para produção. Você confirma?'))
+            return false
+        }
+
+
+
+
+        var post = function(dataPost){
+          $.ajax({
+            url: '/event/' + channel,
+            type: 'POST',
+            contentType: 'application/x-www-form-urlencoded',
+            data:dataPost,
+            success: function(data){
+              $('.bg-light-green').show(500)
+            },
+            error:function(x, y, z){
+              $('.bg-red').show(500)
+            }
+          })        
+        }
+
+        var dataPost = {
+          'msg': message          
+        }
+
+        if(user = 'none'){
+          post(dataPost)
+        }else{
+          var devices = window.accounts[key]
+          for(var i = 0; i < devices.length; i++){
+            var item = devices[i]
+            dataPost['data.user_id'] = item.subscrible_id
+            post(dataPost)
+          }
+        }
+
+        /*
+
+          msg=${var.name} sent a new video: ${var.title}
+          msg.fr=${var.name} a envoyé une nouvelle video: ${var.title}
+          sound=newVideo.mp3
+          data.user_id=fkwhpd
+          data.video_id=1k3dxk
+          var.name=John Doe
+          var.title=Super awesome video
+
+        */
+
+        return false
+
+      })
+
+    })

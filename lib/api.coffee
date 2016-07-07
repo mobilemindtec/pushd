@@ -19,13 +19,13 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         appUserEmail = req.body.appUserEmail || ""
         appUserName = req.body.appUserName || ""
         appHash = req.body.appHash
-        appDebug = if req.body.appDebug == 'S' then true else false
+        appDebug = if req.body.appDebug == true || req.body.appDebug == 'S' then true else false
         server_name = "nenhum"
         apn_name_general = "nenhum"
         apn_name_mobilemind = "nenhum"
         app_type = req.body.os || 'ios'
         channels = ""                 
-        channels_default = ['mobilemind']
+        channels_default = ['mobilemind']        
 
         if appId == 'com.sigturismo.atuaserra'
             server_name_sufix = 'sigturismo-9'
@@ -41,6 +41,13 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         else if appId == 'br.com.mobilemind.gym.college'
             server_name_sufix = '4gym-college'
             channels_sufix = ['4gym-college', '4gym']
+        else if appId == 'br.com.mobilemind.gym.jinseon'
+            server_name_sufix = '4gym-jinseon'
+            channels_sufix = ['4gym-jinseon', '4gym']
+
+        else if appId == 'org.nativescript.PushApp'
+            server_name_sufix = 'push-app'
+            channels_sufix = ['push-app']            
             
         
         if appDebug            
@@ -96,7 +103,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                 return
 
             if appConfig
-                settings.AppConfig.update {_id: appConfig._id}, data, (err, numAffected) ->
+                settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug}, data, (err, numAffected) ->
                     if err
                         console.log("#### update err=#{err}")
                         res.json status: 500, message: "#### update err=#{err}"
@@ -139,6 +146,12 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                             events = data.subscrible_channels.split(",")
 
                             for eventName in events
+                                
+                                eventName = eventName.trim()
+                                if eventName == ""
+                                    continue
+
+                                console.log("## eventName=#{eventName}")
 
                                 event = new eventModule.Event(redis, eventName)
 
@@ -155,7 +168,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 
 
-    app.get '/apps/all', (req, res) ->    
+    app.get '/apps/users', (req, res) ->    
 
         settings.AppConfig.find (err, items) ->
             if err
@@ -177,7 +190,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         app_user_name: it.app_user_name
 
                     })
-                res.json list
+                res.render('users', {items: list})
         
     app.get '/apps/delete/all', (req, res) ->    
 
@@ -192,7 +205,62 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                             console.log("##### error = #{errr}")
 
             
-                res.json status: 200
+                setTimeout(() ->
+                    res.redirect('/apps/users')
+                , 500)
+
+
+    app.get '/apps/message', (req, res) ->
+        
+        channels = []
+
+        settings.AppConfig.find (err, items) ->
+            if err
+                res.json error: err
+                return
+
+            for it in items
+                cls = it.subscrible_channels.split(',')
+                for c in cls
+                    c = c.trim()
+                    if c and c not in channels
+                        channels.push(c)
+
+            res.render('message', {channels: channels})
+
+    app.get '/apps/users-by-channel', (req, res) ->
+                
+        channel = req.query.channel
+
+        if !channel
+            res.json({error: true, message: 'channel param is require'})
+            return
+
+        settings.AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
+            if err
+                res.json error: err
+            
+            users = []
+            accounts = {}
+
+            for it in items            
+                
+                if !accounts[it.app_user_email]
+                    accounts[it.app_user_email] = []
+
+                user = {                        
+                    subscrible_id: it.subscrible_id
+                    name: it.app_user_name
+                    email: it.app_user_email
+                    production: !it.app_debug
+                    ios: it.server_name.indexOf('apns-') > -1
+                    android: it.server_name.indexOf('gcm-') > -1
+                }
+
+                accounts[it.app_user_email].push(user)
+
+
+            res.json(accounts)
 
 
     # subscriber registration
