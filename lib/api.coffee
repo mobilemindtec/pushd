@@ -38,12 +38,18 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         else if appId == 'br.com.mobilemind.gym'
             server_name_sufix = '4gym'
             channels_sufix = ['4gym']
+        
         else if appId == 'br.com.mobilemind.gym.college'
             server_name_sufix = '4gym-college'
             channels_sufix = ['4gym-college', '4gym']
+        
         else if appId == 'br.com.mobilemind.gym.jinseon'
             server_name_sufix = '4gym-jinseon'
             channels_sufix = ['4gym-jinseon', '4gym']
+
+        else if appId == 'br.com.mobilemind.gym.bodysul'
+            server_name_sufix = '4gym-bodysul'
+            channels_sufix = ['4gym-bodysul', '4gym']
 
         else if appId == 'org.nativescript.PushApp'
             server_name_sufix = 'push-app'
