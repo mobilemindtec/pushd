@@ -111,7 +111,7 @@ token = cAApzVTKeNc:APA91bF_y2MTzhSg9TaEhvYJEFdBO4l0cSyx1EbCoJkB00uYJCQA1AtJ7E3I
 
 curl --header "Authorization: key=AIzaSyC69eF20LvmMmjRd68Px9rKACYNyQ8CYcA" \
 --header "Content-Type: application/json" \
-https://gcm-http.googleapis.com/gcm/send -d  "{ \"notification\": { \"title\": \"Portugal vs. Denmark\", \"text\": \"5 to 1\" }, \"to\" : \"eynK2g0UaiM:APA91bEcULAubfOv5fr4iuysvLywTtAptw_R3a8ZO9e4hReQLnljJ7yjv_qa7kPxHgoYGL9O8eW7EBn-inxZHypoG8I683DLelETEar_dKN7LnkQx3yFwgn2iJ2jxITvLtvwXYaSDETU\"}"
+https://gcm-http.googleapis.com/gcm/send -d  "{ \"notification\": { \"title\": \"teste\", \"text\": \"5 to 1\" }, \"to\" : \"cAApzVTKeNc:APA91bF_y2MTzhSg9TaEhvYJEFdBO4l0cSyx1EbCoJkB00uYJCQA1AtJ7E3I_mn-wVowk9QWy-GLESsy9NWp-_2HU-GjNSUHHM1Hp8GNv-0SxQNCXymvJssOtEC3RM9bi9af6qVTO39w\"}"
 
 
 curl -d msg=atuaserra http://10.0.0.106:3000/event/sigturismo-9-dev
