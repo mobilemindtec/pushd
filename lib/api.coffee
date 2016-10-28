@@ -124,7 +124,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         on_subscribe(appConfig, data, req, res)
 
 
-    on_subscribe (appConfig, data, req, res) ->
+    on_subscribe = (appConfig, data, req, res) ->
 
         body = {
             proto: data.server_name
