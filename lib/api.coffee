@@ -109,7 +109,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         res.json status: 500, message: "#### update err=#{err}"
                     else
                         console.log("#### update sucesso")
-                        res.json status: 200 
+                        #res.json status: 200 
 
                         on_subscribe(appConfig, data, req, res)
             else
