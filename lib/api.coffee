@@ -110,6 +110,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                     else
                         console.log("#### update sucesso")
                         res.json status: 200 
+
+                        on_subscribe(appConfig, data, req, res)
             else
                 appConfig = new settings.AppConfig(data)
                 appConfig.save (err)-> # create new app client
@@ -119,53 +121,57 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                     else
                         console.log("#### save sucesso")
 
-                        body = {
-                            proto: data.server_name
-                            token: req.body.appHash
-                            lang: "fr"
-                            badge: 0
-                            category: "show"
-                            contentAvailable: true                            
-                        }                        
+                        on_subscribe(appConfig, data, req, res)
 
-                        # create app subscriber
-                        subscribers body, res, (subscriber) ->
 
-                            if !subscriber
-                                res.json status: 500, message: 'not create subscriber'
-                                return
+    on_subscribe (appConfig, data, req, res) ->
 
-                            console.log("### subscriber.id=#{subscriber.id}")
-                            settings.AppConfig.update {_id: appConfig._id}, {subscrible_id: subscriber.id}, (erre, numAffected) ->
-                                if erre
-                                    console.log("### error on get subscriber id from data.apn_name=#{body.proto}")
-                                    res.json status: 301, message: "### error on get subscriber id from data.apn_name=#{body.proto}"
-                                else
-                                    res.json status: 200
-                            
-                            events = data.subscrible_channels.split(",")
+        body = {
+            proto: data.server_name
+            token: req.body.appHash
+            lang: "fr"
+            badge: 0
+            category: "show"
+            contentAvailable: true                            
+        }  
 
-                            for eventName in events
-                                
-                                eventName = eventName.trim()
-                                if eventName == ""
-                                    continue
+        # create app subscriber
+        subscribers body, res, (subscriber) ->
 
-                                console.log("## eventName=#{eventName}")
+            if !subscriber
+                res.json status: 500, message: 'not create subscriber'
+                return
 
-                                event = new eventModule.Event(redis, eventName)
+            console.log("### subscriber.id=#{subscriber.id}")
+            settings.AppConfig.update {_id: appConfig._id}, {subscrible_id: subscriber.id}, (erre, numAffected) ->
+                if erre
+                    console.log("### error on get subscriber id from data.apn_name=#{body.proto}")
+                    res.json status: 301, message: "### error on get subscriber id from data.apn_name=#{body.proto}"
+                else
+                    res.json status: 200
+            
+            events = data.subscrible_channels.split(",")
 
-                                # create subscriber subscription
-                                subscriber.addSubscription event, 0, (added) ->
-                                    if added? # added is null if subscriber doesn't exist
-                                        if added    
-                                            console.log "# subscription created to event #{eventName}"
-                                        else
-                                            console.log "# subscription not created to event #{eventName}"
-                                    else
-                                        logger.error "No subscriber #{subscriber.id}"
-                                        console.log "# No subscriber #{subscriber.id}"
+            for eventName in events
+                
+                eventName = eventName.trim()
+                if eventName == ""
+                    continue
 
+                console.log("## eventName=#{eventName}")
+
+                event = new eventModule.Event(redis, eventName)
+
+                # create subscriber subscription
+                subscriber.addSubscription event, 0, (added) ->
+                    if added? # added is null if subscriber doesn't exist
+                        if added    
+                            console.log "# subscription created to event #{eventName}"
+                        else
+                            console.log "# subscription not created to event #{eventName}"
+                    else
+                        logger.error "No subscriber #{subscriber.id}"
+                        console.log "# No subscriber #{subscriber.id}"    
 
 
     app.get '/apps/users', (req, res) ->    
