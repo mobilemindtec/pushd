@@ -48,8 +48,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             channels_sufix = ['4gym-jinseon', '4gym']
 
         else if appId == 'br.com.mobilemind.gym.bodysul'
-            server_name_sufix = '4gym-bodysul'
-            channels_sufix = ['4gym-bodysul', '4gym']
+            server_name_sufix = '4gym-bodysull'
+            channels_sufix = ['4gym-bodysull', '4gym']
 
         else if appId == 'org.nativescript.PushApp'
             server_name_sufix = 'push-app'
