@@ -207,12 +207,12 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                 callback = (appConfig) ->
                     on_subscribe appConfig, req, res, (message) ->
                         
-                        message.server_name = it.server_name
-                        message.subscrible_channels = it.subscrible_channels
-                        message.app_id = it.app_id
-                        message.app_user_name = it.app_user_name
-                        message.app_user_email = it.app_user_email
-                        message.app_debug = it.app_debug
+                        message.server_name = appConfig.server_name
+                        message.subscrible_channels = appConfig.subscrible_channels
+                        message.app_id = appConfig.app_id
+                        message.app_user_name = appConfig.app_user_name
+                        message.app_user_email = appConfig.app_user_email
+                        message.app_debug = appConfig.app_debug
 
                         messages.push message
 
