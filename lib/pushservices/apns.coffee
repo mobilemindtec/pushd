@@ -25,6 +25,7 @@ class PushServiceAPNS
         @feedback.on 'feedback', (feedbackData) =>
             @logger?.debug("APNS feedback returned #{feedbackData.length} devices")
             feedbackData.forEach (item) =>
+                console.log("## item.device=" + item.device.toString())
                 tokenResolver 'apns', item.device.toString(), (subscriber) =>
                     subscriber?.get (info) =>
                         if info.updated < item.time

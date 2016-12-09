@@ -117,7 +117,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         console.log("#### update sucesso")
                         #res.json status: 200 
 
-                        on_subscribe(appConfig, data, req, res)
+                        on_subscribe(appConfig, req, res)
             else
                 appConfig = new settings.AppConfig(data)
                 appConfig.save (err)-> # create new app client
@@ -127,13 +127,13 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                     else
                         console.log("#### save sucesso")
 
-                        on_subscribe(appConfig, data, req, res)
+                        on_subscribe(appConfig, req, res)
 
 
-    on_subscribe = (appConfig, data, req, res) ->
+    on_subscribe = (appConfig, req, res, doneCallback) ->
 
         body = {
-            proto: data.server_name
+            proto: appConfig.server_name
             token: req.body.appHash
             lang: "fr"
             badge: 0
@@ -141,22 +141,25 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             contentAvailable: true                            
         }  
 
+        if !doneCallback
+            doneCallback = res.json
+
         # create app subscriber
         subscribers body, res, (subscriber) ->
 
             if !subscriber
-                res.json status: 500, message: 'not create subscriber'
+                doneCallback status: 500, message: 'not create subscriber'
                 return
 
             console.log("### subscriber.id=#{subscriber.id}")
             settings.AppConfig.update {_id: appConfig._id}, {subscrible_id: subscriber.id}, (erre, numAffected) ->
                 if erre
-                    console.log("### error on get subscriber id from data.apn_name=#{body.proto}")
-                    res.json status: 301, message: "### error on get subscriber id from data.apn_name=#{body.proto}"
+                    console.log("### error on get subscriber id from appConfig.apn_name=#{body.proto}")
+                    doneCallback status: 301, message: "### error on get subscriber id from appConfig.apn_name=#{body.proto}"
                 else
-                    res.json status: 200
+                    doneCallback status: 200
             
-            events = data.subscrible_channels.split(",")
+            events = appConfig.subscrible_channels.split(",")
 
             for eventName in events
                 
@@ -179,6 +182,36 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         logger.error "No subscriber #{subscriber.id}"
                         console.log "# No subscriber #{subscriber.id}"    
 
+    app.get '/apps/register/all', (req, res) ->
+
+        for_each = (idx, list, callback, done) ->
+            if idx >= list.length 
+                done()
+            else
+                callback(idx)
+
+        settings.AppConfig.find (err, items) ->
+            if err
+                res.json error: err
+            else
+                idx = 0
+
+                messages = []
+
+                done = () ->
+                    res.json({
+                        count: items.length
+                        messages: messages
+                    })
+
+                callback = (appConfig) ->
+                    on_subscribe appConfig, req, res, (message) ->
+                        message.push message
+                        for_each idx++, items, callback, done
+
+                for_each idx++, items, callback, done
+
+                
 
     app.get '/apps/users', (req, res) ->    
 
