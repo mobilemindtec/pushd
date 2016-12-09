@@ -134,7 +134,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
         body = {
             proto: appConfig.server_name
-            token: req.body.appHash
+            token: appConfig.app_hash
             lang: "fr"
             badge: 0
             category: "show"
