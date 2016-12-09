@@ -188,7 +188,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             if idx >= list.length 
                 done()
             else
-                callback(idx)
+                callback(list[idx])
 
         settings.AppConfig.find (err, items) ->
             if err
