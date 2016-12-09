@@ -206,7 +206,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
                 callback = (appConfig) ->
                     on_subscribe appConfig, req, res, (message) ->
-                        message.push message
+                        messages.push message
                         for_each idx++, items, callback, done
 
                 for_each idx++, items, callback, done
