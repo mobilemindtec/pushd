@@ -15,9 +15,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
     app.post '/apps/register', (req, res) ->
         
+        console.log("======================================")
+        console.log("============== body = #{JSON.stringify(req.body)}")
+        console.log("======================================")
+
         appId = req.body.appId
         appUserEmail = req.body.appUserEmail || ""
         appUserName = req.body.appUserName || ""
+        proto = req.body.proto || ""
         appHash = req.body.appHash
         appDebug = if req.body.appDebug == true || req.body.appDebug == 'S' then true else false
         server_name = "nenhum"
@@ -74,16 +79,22 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
         if app_type == 'ios'
 
+            proto = "apns"
+
             if appDebug
                 server_name = "apns-#{server_name_sufix}-dev"
             else
                 server_name = "apns-#{server_name_sufix}"        
 
         else if app_type == 'android'
+
+            if !proto || proto == ""
+                proto = "gcm"
+
             if appDebug
-                server_name = "gcm-#{server_name_sufix}-dev"
+                server_name = "#{proto}-#{server_name_sufix}-dev"
             else
-                server_name = "gcm-#{server_name_sufix}"
+                server_name = "#{proto}-#{server_name_sufix}"
 
 
 
