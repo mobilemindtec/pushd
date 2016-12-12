@@ -145,7 +145,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         }  
 
         if !doneCallback
-            doneCallback = res.json
+            doneCallback = (j) ->
+                res.json(j)
 
         # create app subscriber
         subscribers body, res, (subscriber) ->
