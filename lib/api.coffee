@@ -55,6 +55,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             server_name_sufix = 'push-app'
             channels_sufix = ['push-app']            
             
+        else if appId == 'br.com.mobilemind.oscontrol'
+            server_name_sufix = 'nort-brasil'
+            channels_sufix = ['nort-brasil', 'mobilemind']            
         
         if appDebug            
             for sufix in channels_sufix
