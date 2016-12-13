@@ -228,6 +228,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         message.app_user_name = appConfig.app_user_name
                         message.app_user_email = appConfig.app_user_email
                         message.app_debug = appConfig.app_debug
+                        message.subscriber_id = appConfig.subscriber_id
 
                         messages.push message
 
@@ -277,6 +278,44 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                 setTimeout(() ->
                     res.redirect('/apps/users')
                 , 500)
+
+    app.get '/apps/delete/:subscriber_id', authorize('register'), (req, res) ->    
+
+        req.subscriber.get (sub) ->
+
+            if !sub
+                res.json({error: true, message: 'subscriber_id is required' })
+                return
+
+            subscriber_deleted = false
+            mongo_deleted = false
+
+            req.subscriber.delete (deleted) ->
+
+                if not deleted
+                    logger.error "No subscriber #{req.subscriber.id}"
+                else
+                    subscriber_deleted = true
+
+                settings.AppConfig.findOne { 'subscriber_id': subscriber_id } ,(err, it) ->
+                    if err
+                        res.json error: err
+                    else                                    
+                        if it
+                            settings.AppConfig.remove {_id: it._id}, (errr) ->
+                                if errr
+                                    res.json status: 'error', message: errr                            
+                                    console.log("##### error = #{errr}")
+                                    return
+                                mongo_deleted = true
+                                res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
+                        else
+                            res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
+
+                                                         
+                            
+
+                    
 
 
     app.get '/apps/message', (req, res) ->

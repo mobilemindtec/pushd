@@ -115,3 +115,11 @@ https://gcm-http.googleapis.com/gcm/send -d  "{ \"notification\": { \"title\": \
 
 
 curl -d msg=atuaserra http://10.0.0.106:3000/event/sigturismo-9-dev
+
+
+
+
+## FCM
+curl --header "Authorization:key=AAAA-M-klBA:APA91bHLvHmS6juR-eilLIL167DPNaWwemToT_GMB65WJuVo2rA48EtFaxqKQq-Znct_JMqqFV0-g4nK0IbVyJjIQztwNGRYJzMI9uA7cmf8BsehKuG42rs6vg8rqLt4LhLy3u0IrWq4WpJ4K9tqQJIJSJV8t6p42Q" \
+--header "Content-Type: application/json" \
+https://fcm.googleapis.com/fcm/send -d '{ "data": { "message": "teste" }, "to": "d5RXi7A-yvI:APA91bHztUrVLlU5tjnR_Pk9dRM4uRMSsZIZ-PRCl6sEvGTvn1BfkiptNHTX9_bJSIAyp0vcagPn_9O6pR9JzYkjiCiyuD2PfIlFhv8BuSha9Wo8hsiDEFN-rkg2I88LmWfunSrMXeFt" }'
