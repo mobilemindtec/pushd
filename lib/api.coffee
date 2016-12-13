@@ -253,7 +253,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                     message.app_user_name = appConfig.app_user_name
                     message.app_user_email = appConfig.app_user_email
                     message.app_debug = appConfig.app_debug
-                    message.subscriber_id = appConfig.subscriber_id
+                    message.subscriber_id = appConfig.subscrible_id
                     messages.push message
 
                 res.json(messages)                    
