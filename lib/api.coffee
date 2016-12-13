@@ -237,6 +237,26 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                 for_each idx++, items, callback, done
 
                 
+    app.get '/apps/show/all', (req, res) ->
+
+        settings.AppConfig.find (err, items) ->
+            if err
+                res.json error: err
+            else
+                messages = []
+
+                for appConfig in items
+                    message = {}
+                    message.server_name = appConfig.server_name
+                    message.subscrible_channels = appConfig.subscrible_channels
+                    message.app_id = appConfig.app_id
+                    message.app_user_name = appConfig.app_user_name
+                    message.app_user_email = appConfig.app_user_email
+                    message.app_debug = appConfig.app_debug
+                    message.subscriber_id = appConfig.subscriber_id
+                    messages.push message
+
+                res.json(messages)                    
 
     app.get '/apps/users', (req, res) ->    
 
