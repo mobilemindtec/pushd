@@ -81,7 +81,7 @@ app.disable('x-powered-by');
 app.param 'subscriber_id', (req, res, next, id) ->
     try
         req.subscriber = new Subscriber(redis, req.params.subscriber_id)
-        delete req.params.subscriber_id
+        #delete req.params.subscriber_id
         next()
     catch error
         res.json error: error.message, 400
