@@ -228,7 +228,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         message.app_user_name = appConfig.app_user_name
                         message.app_user_email = appConfig.app_user_email
                         message.app_debug = appConfig.app_debug
-                        message.subscriber_id = appConfig.subscriber_id
+                        message.subscriber_id = appConfig.subscrible_id
 
                         messages.push message
 
@@ -329,7 +329,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                             else
                                 res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
             else
-                settings.AppConfig.findOne { 'subscriber_id':req.params.subscriber_id } ,(err, appConfig) ->
+                settings.AppConfig.findOne { 'subscrible_id':req.params.subscriber_id } ,(err, appConfig) ->
                     if err
                         res.json error: err
                     else 
