@@ -301,23 +301,35 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
     app.get '/apps/remove/:subscriber_id', (req, res) ->    
 
+        subscriber_deleted = false
+        mongo_deleted = false
+
         req.subscriber.get (sub) ->
 
-            if !sub
-                res.json({error: true, message: 'subscriber_id is required' })
-                return
+            if sub
+                req.subscriber.delete (deleted) ->
 
-            subscriber_deleted = false
-            mongo_deleted = false
+                    if not deleted
+                        logger.error "No subscriber #{req.subscriber.id}"
+                    else
+                        subscriber_deleted = true
 
-            req.subscriber.delete (deleted) ->
-
-                if not deleted
-                    logger.error "No subscriber #{req.subscriber.id}"
-                else
-                    subscriber_deleted = true
-
-                settings.AppConfig.findOne { 'subscriber_id': subscriber_id } ,(err, it) ->
+                    settings.AppConfig.findOne { 'subscriber_id': subscriber_id } ,(err, it) ->
+                        if err
+                            res.json error: err
+                        else                                    
+                            if it
+                                settings.AppConfig.remove {_id: it._id}, (errr) ->
+                                    if errr
+                                        res.json status: 'error', message: errr                            
+                                        console.log("##### error = #{errr}")
+                                        return
+                                    mongo_deleted = true
+                                    res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
+                            else
+                                res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
+            else
+                settings.AppConfig.findOne { 'subscriber_id':req.params.subscriber_id } ,(err, it) ->
                     if err
                         res.json error: err
                     else                                    
