@@ -299,7 +299,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                     res.redirect('/apps/users')
                 , 500)
 
-    app.get '/apps/delete/:subscriber_id', authorize('register'), (req, res) ->    
+    app.get '/apps/remove/:subscriber_id', (req, res) ->    
 
         req.subscriber.get (sub) ->
 
