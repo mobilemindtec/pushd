@@ -329,12 +329,15 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                             else
                                 res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
             else
-                settings.AppConfig.findOne { 'subscriber_id':req.params.subscriber_id } ,(err, it) ->
+                settings.AppConfig.findOne { 'subscriber_id':req.params.subscriber_id } ,(err, appConfig) ->
                     if err
                         res.json error: err
-                    else                                    
-                        if it
-                            settings.AppConfig.remove {_id: it._id}, (errr) ->
+                    else 
+                        if appConfig
+
+                            console.log("### appConfig._id=" + appConfig._id)
+                            
+                            settings.AppConfig.remove {_id: appConfig._id}, (errr) ->
                                 if errr
                                     res.json status: 'error', message: errr                            
                                     console.log("##### error = #{errr}")
