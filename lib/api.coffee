@@ -131,7 +131,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         console.log("#### update sucesso")
                         #res.json status: 200 
 
-                        on_subscribe(appConfig, req, res)
+                        #on_subscribe(appConfig, req, res)
             else
                 appConfig = new settings.AppConfig(data)
                 appConfig.save (err)-> # create new app client
