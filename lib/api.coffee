@@ -100,9 +100,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
         data = {
             server_name: server_name,
-            
-            subscrible_id: "",
-            
+                        
             subscrible_channels: channels,
 
             app_id: appId,
@@ -133,6 +131,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
                         #on_subscribe(appConfig, req, res)
             else
+                data.subscrible_id = ""
                 appConfig = new settings.AppConfig(data)
                 appConfig.save (err)-> # create new app client
                     if err
@@ -197,6 +196,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                         logger.error "No subscriber #{subscriber.id}"
                         console.log "# No subscriber #{subscriber.id}"    
 
+    app.get '/apps/index', (req, res) ->
+        res.render('index', {})
+
     app.get '/apps/register/all', (req, res) ->
 
         for_each = (idx, list, callback, done) ->
@@ -236,6 +238,23 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
                 for_each idx++, items, callback, done
 
+    app.get '/apps/remove/empty', (req, res) ->
+
+        settings.AppConfig.find (err, items) ->
+            if err
+                res.json error: err
+            else                
+                for it in items
+                    if !it.subscrible_id || it.subscrible_id == ""
+                        settings.AppConfig.remove {_id: it._id}, (errr) ->
+                            if errr
+                                res.json status: 'error'                            
+                                console.log("##### error = #{errr}")
+
+            
+                setTimeout(() ->
+                    res.redirect('/apps/users')
+                , 500)
                 
     app.get '/apps/show/all', (req, res) ->
 
@@ -348,13 +367,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                                 res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
                         else
                             res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
-
-                                                         
-                            
-
-                    
-
-
+                                                                                             
     app.get '/apps/message', (req, res) ->
         
         channels = []
