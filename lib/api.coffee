@@ -64,6 +64,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             server_name_sufix = 'nort-brasil'
             channels_sufix = ['nort-brasil']            
         
+        else if appId == 'br.com.amo'
+            server_name_sufix = 'amo'
+            channels_sufix = ['amo']            
+
+        else if appId == 'br.com.dotsdigital.oinn'
+            server_name_sufix = 'oinn'
+            channels_sufix = ['oinn']            
+
         if appDebug            
             for sufix in channels_sufix
                 channels += "#{sufix}-dev,"
