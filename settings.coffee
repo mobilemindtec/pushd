@@ -1,7 +1,7 @@
 fs = require('fs');
 
 
-if !fs.existsSync('./certificados/configs.json')
+if !fs.existsSync('./configs.json')
     console.log("***************************************")
     console.log("***************************************")
     console.log("***************************************")    
@@ -10,7 +10,7 @@ if !fs.existsSync('./certificados/configs.json')
     console.log("***************************************")
     console.log("***************************************")
 
-file_content = fs.readFileSync('./certificados/configs.json', 'utf8')
+file_content = fs.readFileSync('./configs.json', 'utf8')
 configs = JSON.parse(file_content);
 
 #console.log("*****************************")
@@ -71,8 +71,8 @@ for cert_sufix in certificados_development
     for key, value of default_apns_config_development
         exports["apns-#{cert_sufix}-dev"][key] = value
     
-    exports["apns-#{cert_sufix}-dev"].cert = "./certificados/development/ios/apns-cert-#{cert_sufix}.pem"
-    exports["apns-#{cert_sufix}-dev"].key = "./certificados/development/ios/apns-key-#{cert_sufix}.pem"
+    exports["apns-#{cert_sufix}-dev"].cert = "#{configs.apps.apns.development_certs_path}/apns-cert-#{cert_sufix}.pem"
+    exports["apns-#{cert_sufix}-dev"].key = "#{configs.apps.apns.development_certs_path}/apns-key-#{cert_sufix}.pem"
 
 
 console.log("---------------------------")
@@ -84,8 +84,8 @@ for cert_sufix in certificados_production
     for key, value of default_apns_config_production
         exports["apns-#{cert_sufix}"][key] = value
 
-    exports["apns-#{cert_sufix}"].cert = "./certificados/production/ios/apns-cert-#{cert_sufix}.pem"
-    exports["apns-#{cert_sufix}"].key = "./certificados/production/ios/apns-key-#{cert_sufix}.pem"
+    exports["apns-#{cert_sufix}"].cert = "#{configs.apps.apns.production_certs_path}/apns-cert-#{cert_sufix}.pem"
+    exports["apns-#{cert_sufix}"].key = "#{configs.apps.apns.production_certs_path}/apns-key-#{cert_sufix}.pem"
 
 
 # # Uncomment to use same host for prod and dev
