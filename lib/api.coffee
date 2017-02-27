@@ -21,11 +21,11 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         console.log("======================================")
 
 
-        !fs.existsSync('./configs.json')
+        !fs.existsSync('../configs.json')
             res.json status: 500, message: "configs file not found"
             return
 
-        file_content = fs.readFileSync('./configs.json', 'utf8')
+        file_content = fs.readFileSync('../configs.json', 'utf8')
         configs = JSON.parse(file_content);
 
 
