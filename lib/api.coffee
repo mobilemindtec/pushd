@@ -116,9 +116,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						res.json error: err.message, 500
 					else
 						console.log("#### update sucesso")
-						#res.json status: 200 
+						
 
-						#on_subscribe(appConfig, req, res)
+						if !appConfig.subscrible_id || appConfig.subscrible_id == ""
+							console.log("#### subscrible_id does not exists.. go to on_subscribe")
+							on_subscribe(appConfig, req, res)
+						else							
+							console.log("#### subscrible_id already exists")
+							res.json status: 200 
 			else
 				data.subscrible_id = ""
 				appConfig = new settings.AppConfig(data)
@@ -128,7 +133,6 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						res.json error: err.message, 500
 					else
 						console.log("#### save sucesso")
-
 						on_subscribe(appConfig, req, res)
 
 
