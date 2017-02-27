@@ -3,6 +3,7 @@ util = require 'util'
 logger = require 'winston'
 settings = require '../settings'
 eventModule = require './event'
+fs = require('fs');
 
 filterFields = (params) ->
     fields = {}
@@ -19,6 +20,15 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         console.log("============== body = #{JSON.stringify(req.body)}")
         console.log("======================================")
 
+
+        !fs.existsSync('./configs.json')
+            res.json status: 500, message: "configs file not found"
+            return
+
+        file_content = fs.readFileSync('./configs.json', 'utf8')
+        configs = JSON.parse(file_content);
+
+
         appId = req.body.appId
         appUserEmail = req.body.appUserEmail || ""
         appUserName = req.body.appUserName || ""
@@ -30,47 +40,25 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         apn_name_mobilemind = "nenhum"
         app_type = req.body.os || 'ios'
         channels = ""                 
-        channels_default = ['mobilemind']        
+        channels_default = configs.apps.defaults_channels
 
-        if appId == 'com.sigturismo.atuaserra'
-            server_name_sufix = 'sigturismo-9'
-            channels_sufix = ['sigturismo', 'sigturismo-9']
-        
-        else if appId == 'br.com.mobilemind.mybookapp'
-            server_name_sufix = 'my-book-app'
-            channels_sufix = ['my-book-app']
+        server_name_sufix = undefined
+        channels_sufix = undefined
 
-        else if appId == 'br.com.mobilemind.gym'
-            server_name_sufix = '4gym'
-            channels_sufix = ['4gym']
-        
-        else if appId == 'br.com.mobilemind.gym.college'
-            server_name_sufix = '4gym-college'
-            channels_sufix = ['4gym-college', '4gym']
-        
-        else if appId == 'br.com.mobilemind.gym.jinseon'
-            server_name_sufix = '4gym-jinseon'
-            channels_sufix = ['4gym-jinseon', '4gym']
+        for it in configs.apps.channels
+            if it.appid == appId
+                server_name_sufix = it.server_name
+                channels_sufix = it.channels
 
-        else if appId == 'br.com.mobilemind.gym.bodysul'
-            server_name_sufix = '4gym-bodysull'
-            channels_sufix = ['4gym-bodysull', '4gym']
+       
+        if !server_name_sufix
+            res.json status: 500, message: "server name not found to appId #{appid}"
+            return
 
-        else if appId == 'org.nativescript.PushApp'
-            server_name_sufix = 'push-app'
-            channels_sufix = ['push-app']            
-            
-        else if appId == 'br.com.mobilemind.oscontrol'
-            server_name_sufix = 'nort-brasil'
-            channels_sufix = ['nort-brasil']            
-        
-        else if appId == 'br.com.amo'
-            server_name_sufix = 'amo'
-            channels_sufix = ['amo']            
+        if !channels_sufix
+            res.json status: 500, message: "channels not found to appId #{appid}"
+            return
 
-        else if appId == 'br.com.dotsdigital.oinn'
-            server_name_sufix = 'oinn'
-            channels_sufix = ['oinn']            
 
         if appDebug            
             for sufix in channels_sufix
@@ -107,10 +95,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 
         data = {
-            server_name: server_name,
-                        
+            server_name: server_name,                        
             subscrible_channels: channels,
-
             app_id: appId,
             app_hash: appHash,
             app_user_email: appUserEmail,
