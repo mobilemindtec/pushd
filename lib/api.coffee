@@ -21,12 +21,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		console.log("======================================")
 
 
-		if !fs.existsSync('../configs.json')
-			res.json status: 500, message: "configs file not found"
-			return
-
-		file_content = fs.readFileSync('../configs.json', 'utf8')
-		configs = JSON.parse(file_content);
+		configs = settings.configs
 
 
 		appId = req.body.appId
@@ -52,11 +47,11 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 	   
 		if !server_name_sufix
-			res.json status: 500, message: "server name not found to appId #{appid}"
+			res.json error: "server name not found to appId #{appid}", 500
 			return
 
 		if !channels_sufix
-			res.json status: 500, message: "channels not found to appId #{appid}"
+			res.json error: "channels not found to appId #{appid}", 500
 			return
 
 
@@ -111,14 +106,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		settings.AppConfig.findOne { app_hash: data.app_hash, app_debug: appDebug }, (err, appConfig) ->
 
 			if err
-				res.json status: 500
+				res.json error: err.message, 500
 				return
 
 			if appConfig
 				settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug}, data, (err, numAffected) ->
 					if err
 						console.log("#### update err=#{err}")
-						res.json status: 500, message: "#### update err=#{err}"
+						res.json error: err.message, 500
 					else
 						console.log("#### update sucesso")
 						#res.json status: 200 
@@ -130,7 +125,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				appConfig.save (err)-> # create new app client
 					if err
 						console.log("#### save err=#{err}")
-						res.json status: 500, message: "#### save err=#{err}"
+						res.json error: err.message, 500
 					else
 						console.log("#### save sucesso")
 
@@ -242,8 +237,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					if !it.subscrible_id || it.subscrible_id == ""
 						settings.AppConfig.remove {_id: it._id}, (errr) ->
 							if errr
-								res.json status: 'error'                            
 								console.log("##### error = #{errr}")
+								res.json error: errr.message, 500                         
 
 			
 				setTimeout(() ->
@@ -304,8 +299,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				for it in items
 					settings.AppConfig.remove {_id: it._id}, (errr) ->
 						if errr
-							res.json status: 'error'                            
 							console.log("##### error = #{errr}")
+							res.json error: errr.message, 500                      
 
 			
 				setTimeout(() ->
@@ -336,8 +331,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 							if it
 								settings.AppConfig.remove {_id: it._id}, (errr) ->
 									if errr
-										res.json status: 'error', message: errr                            
 										console.log("##### error = #{errr}")
+										res.json error: errr.message, 500
 										return
 									mongo_deleted = true
 									res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
@@ -354,8 +349,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 							
 							settings.AppConfig.remove {_id: appConfig._id}, (errr) ->
 								if errr
-									res.json status: 'error', message: errr                            
 									console.log("##### error = #{errr}")
+									res.json error: errr.message, 500
 									return
 								mongo_deleted = true
 								res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            

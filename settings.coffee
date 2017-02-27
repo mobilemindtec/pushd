@@ -13,6 +13,8 @@ if !fs.existsSync('./configs.json')
 file_content = fs.readFileSync('./configs.json', 'utf8')
 configs = JSON.parse(file_content);
 
+exports.configs = configs
+
 #console.log("*****************************")
 #console.log("configs: #{JSON.stringify(configs)}")
 #console.log("*****************************")
