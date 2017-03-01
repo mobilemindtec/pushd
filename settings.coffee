@@ -235,4 +235,7 @@ exports.AppConfig = mongoose.model('AppConfig', mongoose.Schema({
     app_user_email: String,
     app_debug: Boolean,
 
+    createdAt: Date,
+    lastUpdate: Date
+
 }))
