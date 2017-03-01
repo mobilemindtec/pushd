@@ -118,7 +118,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				return
 
 			if appConfig
-				settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, updatedAt: new Date(), createdAt: appConfig.createdAt || new Date()}, data, (err, numAffected) ->
+				settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, updatedAt: new Date()}, data, (err, numAffected) ->
 					if err
 						console.log("#### update err=#{err}")
 						res.json error: err.message, 500
