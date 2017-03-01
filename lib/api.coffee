@@ -282,6 +282,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						server_name: it.server_name,
 						
 						subscrible_id: it.subscrible_id,
+						subscriber_id: it.subscrible_id,
 						
 						subscrible_channels: it.subscrible_channels,
 
@@ -328,7 +329,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					else
 						subscriber_deleted = true
 
-					settings.AppConfig.findOne { 'subscriber_id': req.params.subscriber_id }, (err, it) ->
+					settings.AppConfig.findOne { 'subscrible_id': req.params.subscriber_id }, (err, it) ->
 						if err
 							res.json error: err
 						else                                    
@@ -401,11 +402,12 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 				user = {                        
 					subscrible_id: it.subscrible_id
+					subscriber_id: it.subscrible_id
 					name: it.app_user_name
 					email: it.app_user_email
 					production: !it.app_debug
 					ios: it.server_name.indexOf('apns-') > -1
-					android: it.server_name.indexOf('gcm-') > -1
+					android: it.server_name.indexOf('gcm-') > -1 || it.server_name.indexOf('fcm-') > -1
 				}
 
 				accounts[it.app_user_email].push(user)
