@@ -423,7 +423,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				if it.createdAt
 					user.createdAt = it.createdAt.toISOString().slice(0, 10)
 
-				if user.updatedAt
+				if it.updatedAt
 					user.updatedAt = it.updatedAt.toISOString().slice(0, 10)
 
 				accounts[it.app_user_email].push(user)
