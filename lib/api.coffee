@@ -118,7 +118,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				return
 
 			if appConfig
-				settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, lastUpdate: new Date(), createdAt: appConfig.createdAt || new Date()}, data, (err, numAffected) ->
+				settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, updatedAt: new Date(), createdAt: appConfig.createdAt || new Date()}, data, (err, numAffected) ->
 					if err
 						console.log("#### update err=#{err}")
 						res.json error: err.message, 500
@@ -136,7 +136,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				data.subscrible_id = ""
 				appConfig = new settings.AppConfig(data)
 				appConfig.createdAt = new Date()
-				appConfig.lastUpdate = new Date()
+				appConfig.updatedAt = new Date()
 				appConfig.save (err)-> # create new app client
 					if err
 						console.log("#### save err=#{err}")
@@ -422,7 +422,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 				if it.createdAt
 					user.createdAt = it.createdAt.toISOString().slice(0, 10)
-					user.lastUpdate = it.lastUpdate.toISOString().slice(0, 10)
+
+				if user.updatedAt
+					user.updatedAt = it.updatedAt.toISOString().slice(0, 10)
 
 				accounts[it.app_user_email].push(user)
 
