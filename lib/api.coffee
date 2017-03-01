@@ -37,6 +37,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		channels = ""                 
 		channels_default = configs.apps.defaults_channels
 
+		if !appUserEmail || appUserEmail.trim().length == 0
+			res.json error: "user name is required", 500
+			return
+
+		if !appUserName || appUserName.trim().length == 0
+			res.json error: "user name is required", 500
+			return
+
 		server_name_sufix = undefined
 		channels_sufix = undefined
 
