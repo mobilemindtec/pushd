@@ -1,4 +1,4 @@
-]async = require 'async'
+async = require 'async'
 util = require 'util'
 logger = require 'winston'
 settings = require '../settings'
@@ -599,7 +599,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 	# Publish an event
 	app.post '/event/:event_id', authorize('publish'), (req, res) ->
 		res.send 204
-		console.log(req.body)
+		console.log("message = #{JSON.stringify(req.body)}")
 		eventPublisher.publish(req.event, req.body)
 
 	# Delete an event
