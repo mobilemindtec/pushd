@@ -236,6 +236,8 @@ exports.AppConfig = mongoose.model('AppConfig', mongoose.Schema({
     app_debug: Boolean,
 
     createdAt: Date,
-    updatedAt: Date
+    updatedAt: Date,
+
+    deviceId: String
 
 }))

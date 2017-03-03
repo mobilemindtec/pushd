@@ -36,6 +36,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		app_type = req.body.os || 'ios'
 		channels = ""                 
 		channels_default = configs.apps.defaults_channels
+		deviceId = req.body.deviceId || ""
 
 		if !appUserEmail || appUserEmail.trim().length == 0
 			res.json error: "user name is required", 500
@@ -105,13 +106,25 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			app_user_email: appUserEmail,
 			app_debug: appDebug,
 			app_user_name: appUserName
+			deviceId: deviceId
 		}
 
 		console.log("####################### data")
 		console.log(JSON.stringify(data))
 		console.log("####################### data")
 
-		settings.AppConfig.findOne { app_hash: data.app_hash, app_debug: appDebug }, (err, appConfig) ->
+		queryArgs = {}
+
+		if data.deviceId && data.deviceId.trim().length > 0			
+			queryArgs = { app_debug: appDebug, deviceId: data.deviceId }
+		else
+			queryArgs = { app_hash: data.app_hash, app_debug: appDebug }
+
+		console.log("####################### find by ")
+		console.log(JSON.stringify(queryArgs))
+		console.log("####################### find by ")
+
+		settings.AppConfig.findOne , (err, appConfig) ->
 
 			if err
 				res.json error: err.message, 500
@@ -418,6 +431,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					production: !it.app_debug
 					ios: it.server_name.indexOf('apns-') > -1
 					android: it.server_name.indexOf('gcm-') > -1 || it.server_name.indexOf('fcm-') > -1
+					deviceId: it.deviceId
 				}
 
 				if it.createdAt
