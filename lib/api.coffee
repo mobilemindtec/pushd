@@ -3,6 +3,7 @@ util = require 'util'
 logger = require 'winston'
 settings = require '../settings'
 eventModule = require './event'
+Subscriber = require('./lib/subscriber').Subscriber
 fs = require('fs');
 
 filterFields = (params) ->
