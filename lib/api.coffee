@@ -156,7 +156,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 								res.json status: 200 
 
 				if subscriber
-					req.subscriber.delete (deleted) ->
+					subscriber.delete (deleted) ->
 						console.log("delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
 						subscriber_update_func()
 				else
