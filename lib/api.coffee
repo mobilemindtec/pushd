@@ -141,7 +141,6 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						else
 							console.log("#### update sucesso")
 							
-
 							if !appConfig.subscrible_id || appConfig.subscrible_id == "" || do_subscription
 								console.log("#### subscription need.. go to on_subscribe")
 								on_subscribe(appConfig, req, res)
@@ -150,7 +149,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 								res.json status: 200 
 				
 				if appConfig.app_hash != data.app_hash
-					
+					# gera novo subscriber_id para novo hash
 					new Subscriber(redis, appConfig.subscrible_id).get (subscriber) ->
 
 						if subscriber
@@ -160,11 +159,12 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 								if deleted
 									subscriber_update_func(true)
 						else
-				
-							subscriber_update_func()
+							# gera novo subscriber_id para nao existente
+							console.log("subscriber #{appConfig.subscrible_id} not found")
+							subscriber_update_func(true)
 				
 				else
-
+					# atualiza informações sem gerar novo subscriber_id
 					subscriber_update_func()				
 
 			else
