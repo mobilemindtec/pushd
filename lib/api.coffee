@@ -150,7 +150,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 								res.json status: 200 
 				
 				if appConfig.app_hash != data.app_hash
-					console.log("** subscriber with different hash ")
+					console.log("** subscriber #{appConfig.subscrible_id} with different hash ")
 					# gera novo subscriber_id para novo hash
 					new Subscriber(redis, appConfig.subscrible_id).get (subscriber) ->
 
