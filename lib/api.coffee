@@ -55,7 +55,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				server_name_sufix = it.server_name
 				channels_sufix = it.channels
 
-	   
+		 
 		if !server_name_sufix
 			res.json error: "server name not found to appId #{appid}", 500
 			return
@@ -155,7 +155,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					new Subscriber(redis, appConfig.subscrible_id).get (subscriber) ->
 
 						if subscriber
-				
+
+							console.log("** subscriber found id = #{subscriber.id}")
+					
 							subscriber.delete (deleted) ->
 								console.log("** delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
 								if deleted
