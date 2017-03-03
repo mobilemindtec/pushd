@@ -108,11 +108,12 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			app_debug: appDebug,
 			app_user_name: appUserName
 			deviceId: deviceId
+			updatedAt: new Date()
 		}
 
-		console.log("####################### data")
+		console.log("*************** data")
 		console.log(JSON.stringify(data))
-		console.log("####################### data")
+		console.log("*************** data")
 
 		queryArgs = {}
 
@@ -121,9 +122,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		else
 			queryArgs = { app_hash: data.app_hash, app_debug: appDebug }
 
-		console.log("####################### find by ")
+		console.log("*************** find by ")
 		console.log(JSON.stringify(queryArgs))
-		console.log("####################### find by ")
+		console.log("*************** find by ")
 
 		settings.AppConfig.findOne queryArgs, (err, appConfig) ->					
 
@@ -134,18 +135,18 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			if appConfig
 
 				subscriber_update_func = (do_subscription) ->
-					settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, updatedAt: new Date()}, data, (err, numAffected) ->
+					settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug}, data, (err, numAffected) ->
 						if err
-							console.log("#### update err=#{err}")
+							console.log("** update err=#{err}")
 							res.json error: err.message, 500
 						else
-							console.log("#### update sucesso")
+							console.log("** update sucesso = #{numAffected}")
 							
 							if !appConfig.subscrible_id || appConfig.subscrible_id == "" || do_subscription
-								console.log("#### subscription need.. go to on_subscribe")
+								console.log("** subscription need.. go to on_subscribe")
 								on_subscribe(appConfig, req, res)
 							else							
-								console.log("#### subscrible_id already exists")
+								console.log("** subscrible_id already exists")
 								res.json status: 200 
 				
 				if appConfig.app_hash != data.app_hash
@@ -155,12 +156,12 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						if subscriber
 				
 							subscriber.delete (deleted) ->
-								console.log("delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
+								console.log("** delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
 								if deleted
 									subscriber_update_func(true)
 						else
 							# gera novo subscriber_id para nao existente
-							console.log("subscriber #{appConfig.subscrible_id} not found")
+							console.log("** subscriber #{appConfig.subscrible_id} not found")
 							subscriber_update_func(true)
 				
 				else
@@ -174,10 +175,10 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				appConfig.updatedAt = new Date()
 				appConfig.save (err)-> # create new app client
 					if err
-						console.log("#### save err=#{err}")
+						console.log("** save err=#{err}")
 						res.json error: err.message, 500
 					else
-						console.log("#### save sucesso")
+						console.log("** save sucesso")
 						on_subscribe(appConfig, req, res)
 
 
