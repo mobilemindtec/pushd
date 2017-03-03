@@ -124,27 +124,43 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		console.log(JSON.stringify(queryArgs))
 		console.log("####################### find by ")
 
-		settings.AppConfig.findOne queryArgs, (err, appConfig) ->
+		settings.AppConfig.findOne queryArgs, (err, appConfig) ->					
 
 			if err
 				res.json error: err.message, 500
 				return
 
 			if appConfig
-				settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, updatedAt: new Date()}, data, (err, numAffected) ->
-					if err
-						console.log("#### update err=#{err}")
-						res.json error: err.message, 500
-					else
-						console.log("#### update sucesso")
-						
 
-						if !appConfig.subscrible_id || appConfig.subscrible_id == ""
-							console.log("#### subscrible_id does not exists.. go to on_subscribe")
-							on_subscribe(appConfig, req, res)
-						else							
-							console.log("#### subscrible_id already exists")
-							res.json status: 200 
+				if appConfig.app_hash != data.app_hash
+					try
+						subscriber = new Subscriber(redis, appConfig.subscrible_id)
+					catch error
+						console.log("subscriber #{appConfig.subscrible_id} not found: #{error}")
+
+				subscriber_update_func = () ->
+					settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug, updatedAt: new Date()}, data, (err, numAffected) ->
+						if err
+							console.log("#### update err=#{err}")
+							res.json error: err.message, 500
+						else
+							console.log("#### update sucesso")
+							
+
+							if !appConfig.subscrible_id || appConfig.subscrible_id == ""
+								console.log("#### subscrible_id does not exists.. go to on_subscribe")
+								on_subscribe(appConfig, req, res)
+							else							
+								console.log("#### subscrible_id already exists")
+								res.json status: 200 
+
+				if subscriber
+					req.subscriber.delete (deleted) ->
+						console.log("delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
+						subscriber_update_func()
+				else
+					subscriber_update_func()
+
 			else
 				data.subscrible_id = ""
 				appConfig = new settings.AppConfig(data)
@@ -332,7 +348,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 			
 				setTimeout(() ->
-					res.redirect('/apps/users')
+					res.redirect('/apps/users') 
 				, 500)
 
 	app.get '/apps/remove/:subscriber_id', (req, res) ->    
@@ -342,48 +358,39 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 		console.log("remove subscriber_id=#{req.params.subscriber_id}")
 		
+		subscriber_remove_func = () ->
+			settings.AppConfig.findOne { 'subscrible_id': req.params.subscriber_id }, (err, it) ->
+				if err
+					res.json error: err
+				else                                    
+					if it
+						settings.AppConfig.remove {_id: it._id}, (errr) ->
+							if errr
+								console.log("##### error = #{errr}")
+								res.json error: errr.message, 500								
+							else
+								mongo_deleted = true
+								res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
+					else
+						logger.error "No subscriber found #{req.params.subscriber_id} on mongo"
+						res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
+
+
 		req.subscriber.get (sub) ->
 
 			if sub
 				req.subscriber.delete (deleted) ->
 
 					if not deleted
-						logger.error "No subscriber #{req.subscriber.id}"
+						logger.error "No subscriber #{req.subscriber.id} on redis"
 					else
 						subscriber_deleted = true
 
-					settings.AppConfig.findOne { 'subscrible_id': req.params.subscriber_id }, (err, it) ->
-						if err
-							res.json error: err
-						else                                    
-							if it
-								settings.AppConfig.remove {_id: it._id}, (errr) ->
-									if errr
-										console.log("##### error = #{errr}")
-										res.json error: errr.message, 500
-										return
-									mongo_deleted = true
-									res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
-							else
-								res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
-			else
-				settings.AppConfig.findOne { 'subscrible_id': req.params.subscriber_id }, (err, appConfig) ->
-					if err
-						res.json error: err
-					else 
-						if appConfig
+					subscriber_remove_func()
 
-							console.log("### appConfig._id=" + appConfig._id)
-							
-							settings.AppConfig.remove {_id: appConfig._id}, (errr) ->
-								if errr
-									console.log("##### error = #{errr}")
-									res.json error: errr.message, 500
-									return
-								mongo_deleted = true
-								res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
-						else
-							res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
+			else
+				logger.error "No subscriber found #{req.params.subscriber_id} on redis"
+				subscriber_remove_func()
 																							 
 	app.get '/apps/message', (req, res) ->
 		
