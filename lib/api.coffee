@@ -124,7 +124,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		console.log(JSON.stringify(queryArgs))
 		console.log("####################### find by ")
 
-		settings.AppConfig.findOne , (err, appConfig) ->
+		settings.AppConfig.findOne queryArgs, (err, appConfig) ->
 
 			if err
 				res.json error: err.message, 500
