@@ -135,7 +135,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			if appConfig
 
 				subscriber_update_func = (do_subscription) ->
-					settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug}, data, (err, numAffected) ->
+					settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug }, data, (err, numAffected) ->
 						if err
 							console.log("** update err=#{err}")
 							res.json error: err.message, 500
@@ -144,7 +144,8 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 							
 							if !appConfig.subscrible_id || appConfig.subscrible_id == "" || do_subscription
 								console.log("** subscription need.. go to on_subscribe")
-								on_subscribe(appConfig, req, res)
+								settings.AppConfig.findOne { _id: appConfig._id }, (err, appConfig) ->
+									on_subscribe(appConfig, req, res)
 							else							
 								console.log("** subscrible_id already exists")
 								res.json status: 200 
