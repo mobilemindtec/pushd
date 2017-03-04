@@ -15,10 +15,6 @@ block content
   .large-12.columns
     .box
       .box-header.bg-transparent
-
-        .pull-right.box-tools
-          .box-btn
-            a.tiny.button.alert.delete-all(href='/apps/delete/all') Remove all
                                 
         // tools box
         h3.box-title
@@ -67,10 +63,6 @@ block content
 block js-inline
   script().
     $(document).ready(function(){
-
-      $('.delete-all').click(function(){
-        return confirm('Are you sure?')
-      })
 
       $('.btn-token').click(function(){
 

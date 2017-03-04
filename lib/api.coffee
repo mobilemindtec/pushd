@@ -282,24 +282,6 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						for_each idx++, items, callback, done
 
 				for_each idx++, items, callback, done
-
-	app.get '/apps/remove/empty', (req, res) ->
-
-		settings.AppConfig.find (err, items) ->
-			if err
-				res.json error: err
-			else                
-				for it in items
-					if !it.subscrible_id || it.subscrible_id == ""
-						settings.AppConfig.remove {_id: it._id}, (errr) ->
-							if errr
-								console.log("##### error = #{errr}")
-								res.json error: errr.message, 500                         
-
-			
-				setTimeout(() ->
-					res.redirect('/apps/users')
-				, 500)
 				
 	app.get '/apps/show/all', (req, res) ->
 
@@ -347,22 +329,6 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					})
 				res.render('users', {items: list})
 		
-	app.get '/apps/delete/all', (req, res) ->    
-
-		settings.AppConfig.find (err, items) ->
-			if err
-				res.json error: err
-			else                
-				for it in items
-					settings.AppConfig.remove {_id: it._id}, (errr) ->
-						if errr
-							console.log("##### error = #{errr}")
-							res.json error: errr.message, 500                      
-
-			
-				setTimeout(() ->
-					res.redirect('/apps/users') 
-				, 500)
 
 	app.get '/apps/remove/:subscriber_id', (req, res) ->    
 

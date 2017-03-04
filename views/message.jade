@@ -73,7 +73,7 @@ block js-inline
         window.accounts = {}
 
         $.ajax({
-          url: '/apps/users-by-channel?channel=' + channel,
+          url: '/apps/' + channel,
           contentType: 'application/json',                 
           success: function(data){
 
