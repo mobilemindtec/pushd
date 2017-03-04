@@ -465,6 +465,47 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 			res.json(accounts)
 
+	app.get '/apps/:channel', (req, res) ->
+				
+		channel = req.params.channel
+
+		if !channel || channel.trim().length == 0
+			res.json({error: true, message: 'channel param is require'})
+			return
+
+		settings.AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
+			if err
+				res.json error: err
+			
+			users = []
+			accounts = {}
+
+			for it in items            
+				
+				if !accounts[it.app_user_email]
+					accounts[it.app_user_email] = []
+
+				user = {                        
+					subscrible_id: it.subscrible_id
+					subscriber_id: it.subscrible_id
+					name: it.app_user_name
+					email: it.app_user_email
+					production: !it.app_debug
+					ios: it.server_name.indexOf('apns-') > -1
+					android: it.server_name.indexOf('gcm-') > -1 || it.server_name.indexOf('fcm-') > -1
+					deviceId: it.deviceId
+				}
+
+				if it.createdAt
+					user.createdAt = it.createdAt.toISOString().slice(0, 10)
+
+				if it.updatedAt
+					user.updatedAt = it.updatedAt.toISOString().slice(0, 10)
+
+				accounts[it.app_user_email].push(user)
+
+
+			res.json(accounts)
 
 	# subscriber registration
 
