@@ -118,9 +118,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		queryArgs = {}
 
 		if data.deviceId && data.deviceId.trim().length > 0			
-			queryArgs = { app_debug: appDebug, deviceId: data.deviceId }
+			queryArgs = { app_debug: appDebug, deviceId: data.deviceId, app_id: appId }
 		else
-			queryArgs = { app_hash: data.app_hash, app_debug: appDebug }
+			queryArgs = { app_hash: data.app_hash, app_debug: appDebug, app_id: appId  }
 
 		console.log("*************** find by ")
 		console.log(JSON.stringify(queryArgs))
