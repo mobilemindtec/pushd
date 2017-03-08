@@ -440,7 +440,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			res.json({error: true, message: 'channel param is require'})
 			return
 
-		console.log("step 2")
+		console.log("step 2 #{settings.AppConfig}")
 
 		settings.AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
 			if err

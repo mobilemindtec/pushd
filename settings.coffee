@@ -243,3 +243,5 @@ exports.AppConfig = mongoose.model('AppConfig', mongoose.Schema({
 	deviceId: String
 
 }))
+
+console.log("exports.AppConfig=#{exports.AppConfig}")
