@@ -65,8 +65,13 @@ checkUserAndPassword = (username, password) =>
 app = express()
 
 app.use(express.logger(':method :url :status')) if settings.server?.access_log
+
 if settings.server?.auth? and not settings.server?.acl?
+    logger.info "use basicAuth "
     app.use(express.basicAuth checkUserAndPassword)
+else
+    logger.info "not use basicAuth "
+
 app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }))
 app.use(bodyParser.json({ limit: '1mb' }))
 app.use(app.router)
@@ -110,7 +115,7 @@ authorize = (realm) ->
             logger.verbose "Authenticating #{req.user} for #{realm}"
             if not req.user?
                 logger.error "User not authenticated"
-                logger.error "host: $req.headers.host"
+                logger.error "host: #{req.headers.host}"
                 res.json error: 'Unauthorized', 403
                 return
 

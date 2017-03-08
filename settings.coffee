@@ -29,9 +29,9 @@ exports.server =
 	tcp_port: 3000
 	udp_port: 3000
 	access_log: yes
-	acl:
+	acl: undefined
 		# restrict publish access to private networks
-		publish: undefined # configs.publish
+		# publish: configs.publish
 	auth: configs.auth
 		# require HTTP basic authentication, username is 'admin' and
 		# password is 'password'
