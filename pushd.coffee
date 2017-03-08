@@ -112,7 +112,7 @@ authorize = (realm) ->
     if settings.server?.auth?
         return (req, res, next) ->
             # req.user has been set by express.basicAuth
-            logger.verbose "Authenticating #{req.user} for #{realm}"
+            logger.verbose "Authenticating #{req.user} for #{realm} with host #{req.headers.host}"
             if not req.user?
                 logger.error "User not authenticated"
                 logger.error "host: #{req.headers.host}"
@@ -121,7 +121,7 @@ authorize = (realm) ->
 
             allowedRealms = settings.server.auth[req.user]?.realms or []
             if realm not in allowedRealms
-                logger.error "No access to #{realm} for #{req.user}, allowed: #{allowedRealms}"
+                logger.error "No access to #{realm} for #{req.user}, allowed: #{allowedRealms}, host: #{req.headers.host}"
                 res.json error: 'Unauthorized', 403
                 return
 
