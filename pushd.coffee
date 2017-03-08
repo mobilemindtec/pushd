@@ -110,6 +110,7 @@ authorize = (realm) ->
             logger.verbose "Authenticating #{req.user} for #{realm}"
             if not req.user?
                 logger.error "User not authenticated"
+                logger.error "host: $req.headers.host"
                 res.json error: 'Unauthorized', 403
                 return
 
