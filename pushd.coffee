@@ -163,6 +163,7 @@ authorize = (realm) ->
                 return
 
             next()
+            
     else if allow_from = settings.server?.acl?[realm]
         networks = []
         for network in allow_from
