@@ -244,6 +244,7 @@ exports.AppConfig = mongoose.model('AppConfig', mongoose.Schema({
 
 }))
 
-exports.AppConfig.count (err, count) ->
-	console.log("exports.AppConfig=#{err}")
-	console.log("exports.AppConfig=#{count}")
+console.log("mongo find")
+exports.AppConfig.find (err, items) ->
+	console.log("items=#{items.length}")
+	
