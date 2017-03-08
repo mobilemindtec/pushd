@@ -433,23 +433,15 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 	app.get '/apps/:channel', authorize('publish'), (req, res) ->
 				
 		channel = req.params.channel
-		
-		console.log("step 1")
 
 		if !channel || channel.trim().length == 0
 			res.json({error: true, message: 'channel param is require'})
 			return
-
-		console.log("step 2 #{settings.AppConfig}")
-
+			
 		settings.AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
 			if err
-				console.log("step 3 #{err}")
 				res.json error: err
-				return
 			
-			console.log("step 4")
-
 			users = []
 			accounts = {}
 
@@ -477,7 +469,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 				accounts[it.app_user_email].push(user)
 
-			console.log("step 5")
+
 			res.json(accounts)
 
 	# subscriber registration
