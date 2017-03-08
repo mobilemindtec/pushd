@@ -32,6 +32,7 @@ exports.server =
     acl:
         # restrict publish access to private networks
         #publish: configs.publish
+
     auth: configs.auth
         # require HTTP basic authentication, username is 'admin' and
         # password is 'password'
