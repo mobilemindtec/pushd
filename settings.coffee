@@ -220,7 +220,9 @@ exports['logging'] = [
 
 
 mongoose = require 'mongoose'
-mongoose.connect(configs.mongo.connection_string, { user: configs.mongo.user, pass: configs.mongo.password })
+mongoose.connect(configs.mongo.connection_string, { user: configs.mongo.user, pass: configs.mongo.password }, (err) ->
+	console.log("error on mongoose connect: #{err}")
+)
 
 exports.AppConfig = mongoose.model('AppConfig', mongoose.Schema({
 	
