@@ -241,10 +241,10 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 						logger.error "No subscriber #{subscriber.id}"
 						console.log "# No subscriber #{subscriber.id}"    
 
-	app.get '/apps/index', (req, res) ->
+	app.get '/apps/index', authorize('admin'), (req, res) ->
 		res.render('index', {})
 
-	app.get '/apps/register/all', (req, res) ->
+	app.get '/apps/register/all', authorize('admin'), (req, res) ->
 
 		for_each = (idx, list, callback, done) ->
 			if idx >= list.length 
@@ -283,7 +283,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 				for_each idx++, items, callback, done
 				
-	app.get '/apps/show/all', (req, res) ->
+	app.get '/apps/show/all', authorize('admin'), (req, res) ->
 
 		settings.AppConfig.find (err, items) ->
 			if err
@@ -329,8 +329,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					})
 				res.render('users', {items: list})
 		
-
-	app.get '/apps/remove/:subscriber_id', (req, res) ->    
+	app.get '/apps/remove/:subscriber_id', authorize('admin'), (req, res) ->    
 
 		subscriber_deleted = false
 		mongo_deleted = false
@@ -371,7 +370,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				logger.error "No subscriber found #{req.params.subscriber_id} on redis"
 				subscriber_remove_func()
 																							 
-	app.get '/apps/message', (req, res) ->
+	app.get '/apps/message', authorize('admin'), (req, res) ->
 		
 		channels = []
 
@@ -389,7 +388,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 			res.render('message', {channels: channels})
 
-	app.get '/apps/users-by-channel', (req, res) ->
+	app.get '/apps/users-by-channel', authorize('publish'), (req, res) ->
 				
 		channel = req.query.channel
 
@@ -431,7 +430,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 			res.json(accounts)
 
-	app.get '/apps/:channel', (req, res) ->
+	app.get '/apps/:channel', authorize('publish'), (req, res) ->
 				
 		channel = req.params.channel
 

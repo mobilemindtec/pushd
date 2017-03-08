@@ -32,15 +32,15 @@ exports.server =
     acl:
         # restrict publish access to private networks
         publish: configs.publish
-#    auth:
-#        # require HTTP basic authentication, username is 'admin' and
-#        # password is 'password'
-#        #
-#        # HTTP basic authentication overrides IP-based authentication
-#        # if both acl and auth are defined.
-#        admin:
-#            password: 'password'
-#            realms: ['register', 'publish']
+    auth: configs.auth
+        # require HTTP basic authentication, username is 'admin' and
+        # password is 'password'
+        #
+        # HTTP basic authentication overrides IP-based authentication
+        # if both acl and auth are defined.
+        #admin:
+        #    password: 'password'
+        #    realms: ['register', 'publish', 'admin']
 
 exports['event-source'] = 
     enabled: yes 
