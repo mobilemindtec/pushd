@@ -112,6 +112,11 @@ authorize = (realm) ->
     if settings.server?.auth?
         return (req, res, next) ->
             # req.user has been set by express.basicAuth
+
+            if realm == 'anonymous'
+                logger.verbose "Authenticating anonymous, host #{req.headers.host}"
+                return
+
             logger.verbose "Authenticating #{req.user} for #{realm} with host #{req.headers.host}"
             if not req.user?
                 logger.error "User not authenticated"

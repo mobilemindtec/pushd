@@ -15,7 +15,7 @@ filterFields = (params) ->
 exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus) ->    
 	authorize ?= (realm) ->
 
-	app.post '/apps/register', (req, res) ->
+	app.post '/apps/register', authorize('anonymous'), (req, res) ->
 		
 		console.log("======================================")
 		console.log("============== body = #{JSON.stringify(req.body)}")
