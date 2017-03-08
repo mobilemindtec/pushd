@@ -28,6 +28,13 @@ class PushServiceFCM
                         note.notification.title = title
                     if message = payload.localizedMessage(info.lang)
                         note.notification.body = message
+
+                    if payload.color
+                        note.notification.color = payload.color
+
+                    if payload.icon
+                        note.notification.icon = payload.icon
+
                 for key, value of payload.data
                     note.data[key] = value
 
