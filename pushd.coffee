@@ -52,6 +52,7 @@ for name, conf of settings when conf.enabled
 eventPublisher = new EventPublisher(pushServices)
 
 checkUserAndPassword = (username, password) =>
+
     if settings.server?.auth?
         if not settings.server.auth[username]?
             logger.error "Unknown user #{username}"
@@ -60,17 +61,19 @@ checkUserAndPassword = (username, password) =>
         if not passwordOK
             logger.error "Invalid password for #{username}"
         return passwordOK
+    
+
     return false
 
 app = express()
 
 app.use(express.logger(':method :url :status')) if settings.server?.access_log
 
-if settings.server?.auth? and not settings.server?.acl?
-    logger.info "use basicAuth "
-    app.use(express.basicAuth checkUserAndPassword)
-else
-    logger.info "not use basicAuth "
+#if settings.server?.auth? and not settings.server?.acl?
+#    logger.info "use basicAuth "
+#    app.use(express.basicAuth(checkUserAndPassword))
+#else
+#    logger.info "not use basicAuth "
 
 app.use(bodyParser.urlencoded({ limit: '1mb', extended: true }))
 app.use(bodyParser.json({ limit: '1mb' }))
@@ -109,13 +112,42 @@ app.param 'event_id', (req, res, next, id) ->
         res.json error: error.message, 400
 
 authorize = (realm) ->
+
     if settings.server?.auth?
         return (req, res, next) ->
             # req.user has been set by express.basicAuth
 
             if realm == 'anonymous'
                 logger.verbose "Authenticating anonymous, host #{req.headers.host}"
+                next()
                 return
+
+
+            ## init basic autentication
+            auth = req.get("authorization")
+            if !auth
+                logger.error "Authorization Required, host: #{req.headers.host}"
+                res.set("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
+                res.status(401).send("Authorization Required")
+                return
+
+            credentials = new Buffer(auth.split(" ").pop(), "base64").toString("ascii").split(":")
+
+            console.log("auth=#{auth}")
+
+            username = credentials[0] 
+            password = credentials[1]            
+
+            if !checkUserAndPassword(username, password)
+                #console.log("username=#{credentials[0]}")
+                #console.log("password=#{credentials[1]}")
+                logger.error "Bad Credentials, username: #{username},  host: #{req.headers.host}"
+                res.json error: 'Unauthorized', 403
+                return
+
+            req.user = username
+
+            ## end basic autentication
 
             logger.verbose "Authenticating #{req.user} for #{realm} with host #{req.headers.host}"
             if not req.user?
