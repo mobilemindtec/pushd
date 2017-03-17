@@ -8,7 +8,7 @@ class EventPublisher extends events.EventEmitter
     publish: (event, data, cb) ->
 
         console.log('##### event publish data =' + JSON.stringify(data))
-        console.log(cb)
+        #console.log(cb)
         
         try
             payload = new Payload(data)

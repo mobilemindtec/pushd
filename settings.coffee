@@ -229,21 +229,22 @@ mongoose.connect(configs.mongo.connection_string, { user: configs.mongo.user, pa
 )
 
 exports.AppConfig = mongoose.model('AppConfig', mongoose.Schema({
-	
-	server_name: String,
-	subscrible_id: String,
-
-	subscrible_channels: String,
-
-	app_id: String,
-	app_hash: String,    
-	app_user_name: String,
-	app_user_email: String,
-	app_debug: Boolean,
-
-	createdAt: Date,
-	updatedAt: Date,
-
+	server_name: String
+	subscrible_id: String
+	subscrible_channels: String
+	app_id: String
+	app_hash: String
+	app_user_name: String
+	app_user_email: String
+	app_debug: Boolean
+	createdAt: Date
+	updatedAt: Date
 	deviceId: String
+}))
 
+exports.Message = mongoose.model('Messages', mongoose.Schema({	
+	sender: String
+	eventName: String
+	content: String
+	createdAt: Date
 }))

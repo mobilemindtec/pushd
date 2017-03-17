@@ -106,7 +106,7 @@ checkStatus = () ->
 app.param 'event_id', (req, res, next, id) ->
     try
         req.event = getEventFromId(req.params.event_id)
-        delete req.params.event_id
+        #delete req.params.event_id
         next()
     catch error
         res.json error: error.message, 400
@@ -133,14 +133,10 @@ authorize = (realm) ->
 
             credentials = new Buffer(auth.split(" ").pop(), "base64").toString("ascii").split(":")
 
-            console.log("auth=#{auth}")
-
             username = credentials[0] 
             password = credentials[1]            
 
             if !checkUserAndPassword(username, password)
-                #console.log("username=#{credentials[0]}")
-                #console.log("password=#{credentials[1]}")
                 logger.error "Bad Credentials, username: #{username},  host: #{req.headers.host}"
                 res.json error: 'Unauthorized', 403
                 return

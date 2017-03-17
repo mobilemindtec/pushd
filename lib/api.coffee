@@ -6,6 +6,9 @@ eventModule = require './event'
 Subscriber = require('./subscriber').Subscriber
 fs = require('fs');
 
+AppConfig = settings.AppConfig
+Message = settings.Message
+
 filterFields = (params) ->
 	fields = {}
 	fields[key] = val for own key, val of params when key in ['proto', 'token', 'lang', 'badge', 'version', 'category', 'contentAvailable']
@@ -13,13 +16,14 @@ filterFields = (params) ->
 
 # appId, appDebug, os, appHash, appUsername
 exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize, testSubscriber, eventPublisher, checkStatus) ->    
+	
 	authorize ?= (realm) ->
 
 	app.post '/apps/register', authorize('anonymous'), (req, res) ->
 		
-		console.log("======================================")
-		console.log("============== body = #{JSON.stringify(req.body)}")
-		console.log("======================================")
+		#logger.info("======================================")
+		#logger.info("============== body = #{JSON.stringify(req.body)}")
+		#logger.info("======================================")
 
 
 		configs = settings.configs
@@ -97,8 +101,6 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			else
 				server_name = "#{proto}-#{server_name_sufix}"
 
-
-
 		data = {
 			server_name: server_name,                        
 			subscrible_channels: channels,
@@ -111,9 +113,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			updatedAt: new Date()
 		}
 
-		console.log("*************** data")
-		console.log(JSON.stringify(data))
-		console.log("*************** data")
+		logger.info("*************** data app config")
+		logger.info(JSON.stringify(data))
+		logger.info("*************** data app config")
 
 		queryArgs = {}
 
@@ -122,11 +124,11 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		else
 			queryArgs = { app_hash: data.app_hash, app_debug: appDebug, app_id: appId  }
 
-		console.log("*************** find by ")
-		console.log(JSON.stringify(queryArgs))
-		console.log("*************** find by ")
+		logger.info("*************** find by app config")
+		logger.info(JSON.stringify(queryArgs))
+		logger.info("*************** find by app config")
 
-		settings.AppConfig.findOne queryArgs, (err, appConfig) ->					
+		AppConfig.findOne queryArgs, (err, appConfig) ->					
 
 			if err
 				res.json error: err.message, 500
@@ -135,23 +137,22 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			if appConfig
 
 				subscriber_update_func = (do_subscription) ->
-					settings.AppConfig.update {_id: appConfig._id, app_debug: appDebug }, data, (err, numAffected) ->
-						if err
-							console.log("** update err=#{err}")
+					AppConfig.update {_id: appConfig._id, app_debug: appDebug }, data, (err, numAffected) ->
+						if err							
 							res.json error: err.message, 500
 						else
-							console.log("** update sucesso = #{numAffected}")
+							logger.info("** update config sucesso = #{numAffected}")
 							
 							if !appConfig.subscrible_id || appConfig.subscrible_id == "" || do_subscription
-								console.log("** subscription need.. go to on_subscribe")
-								settings.AppConfig.findOne { _id: appConfig._id }, (err, appConfig) ->
+								logger.info("** subscription need.. go to on_subscribe")
+								AppConfig.findOne { _id: appConfig._id }, (err, appConfig) ->
 									on_subscribe(appConfig, req, res)
 							else							
-								console.log("** subscrible_id already exists")
+								logger.info("** subscrible_id already exists")
 								res.json status: 200 
 				
 				if appConfig.app_hash != data.app_hash
-					console.log("** subscriber #{appConfig.subscrible_id} with different hash ")
+					logger.info("** subscriber #{appConfig.subscrible_id} with different hash ")
 					# gera novo subscriber_id para novo hash
 
 					subscriber = new Subscriber(redis, appConfig.subscrible_id)
@@ -159,15 +160,15 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 						if subscriber_found
 
-							console.log("** subscriber found id = #{subscriber.id}")
+							logger.info("** subscriber found id #{subscriber.id}")
 					
 							subscriber.delete (deleted) ->
-								console.log("** delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
+								logger.info("** delete subscriber #{appConfig.subscrible_id}. status #{deleted}")
 								if deleted
 									subscriber_update_func(true)
 						else
 							# gera novo subscriber_id para nao existente
-							console.log("** subscriber #{appConfig.subscrible_id} not found")
+							logger.info("** subscriber #{appConfig.subscrible_id} not found")
 							subscriber_update_func(true)
 				
 				else
@@ -176,19 +177,18 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 			else
 				data.subscrible_id = ""
-				appConfig = new settings.AppConfig(data)
+				appConfig = new AppConfig(data)
 				appConfig.createdAt = new Date()
 				appConfig.updatedAt = new Date()
 				appConfig.save (err)-> # create new app client
 					if err
-						console.log("** save err=#{err}")
 						res.json error: err.message, 500
 					else
-						console.log("** save sucesso")
+						logger.info("** save new app config sucesso")
 						on_subscribe(appConfig, req, res)
 
 
-	on_subscribe = (appConfig, req, res, doneCallback) ->
+	on_subscribe = (appConfig, req, res, callback) ->
 
 		body = {
 			proto: appConfig.server_name
@@ -199,24 +199,25 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			contentAvailable: true                            
 		}  
 
-		if !doneCallback
-			doneCallback = (j) ->
+		if !callback
+			callback = (j) ->
 				res.json(j)
 
 		# create app subscriber
 		subscribers body, res, (subscriber) ->
 
 			if !subscriber
-				doneCallback status: 500, message: 'not create subscriber'
+				callback status: 500, message: 'subscriber not created'
 				return
 
-			console.log("### subscriber.id=#{subscriber.id}")
-			settings.AppConfig.update {_id: appConfig._id}, {subscrible_id: subscriber.id}, (erre, numAffected) ->
+			logger.info("subscriber created id #{subscriber.id}")
+
+			AppConfig.update {_id: appConfig._id}, {subscrible_id: subscriber.id}, (erre, numAffected) ->
 				if erre
-					console.log("### error on get subscriber id from appConfig.apn_name=#{body.proto}")
-					doneCallback status: 301, message: "### error on get subscriber id from appConfig.apn_name=#{body.proto}"
+					logger.error("error on update subscriber to set id: #{body}")
+					callback status: 301, message: "error on update subscriber to set id"
 				else
-					doneCallback status: 200
+					callback status: 200
 			
 			events = appConfig.subscrible_channels.split(",")
 
@@ -226,7 +227,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				if eventName == ""
 					continue
 
-				console.log("## eventName=#{eventName}")
+				logger.info("register subscriber #{subscriber.id} on event #{eventName}")
 
 				event = new eventModule.Event(redis, eventName)
 
@@ -234,12 +235,11 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				subscriber.addSubscription event, 0, (added) ->
 					if added? # added is null if subscriber doesn't exist
 						if added    
-							console.log "# subscription created to event #{eventName}"
+							logger.info "subscription event #{eventName} created to subscriber #{subscriber.id}"
 						else
-							console.log "# subscription not created to event #{eventName}"
+							logger.error "subscription event #{eventName} not created to subscriber #{subscriber.id}"
 					else
-						logger.error "No subscriber #{subscriber.id}"
-						console.log "# No subscriber #{subscriber.id}"    
+						logger.error "subscription event #{eventName} not created to subscriber #{subscriber.id}"
 
 	app.get '/apps/index', authorize('admin'), (req, res) ->
 		res.render('index', {})
@@ -252,7 +252,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 			else
 				callback(list[idx])
 
-		settings.AppConfig.find (err, items) ->
+		AppConfig.find (err, items) ->
 			if err
 				res.json error: err
 			else
@@ -285,7 +285,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				
 	app.get '/apps/show/all', authorize('admin'), (req, res) ->
 
-		settings.AppConfig.find (err, items) ->
+		AppConfig.find (err, items) ->
 			if err
 				res.json error: err
 			else
@@ -306,7 +306,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 	app.get '/apps/users', (req, res) ->    
 
-		settings.AppConfig.find (err, items) ->
+		AppConfig.find (err, items) ->
 			if err
 				res.json error: err
 			else
@@ -334,23 +334,23 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		subscriber_deleted = false
 		mongo_deleted = false
 
-		console.log("remove subscriber_id=#{req.params.subscriber_id}")
+		logger.info("trying remove subscriber #{req.params.subscriber_id}")
 		
 		subscriber_remove_func = () ->
-			settings.AppConfig.findOne { 'subscrible_id': req.params.subscriber_id }, (err, it) ->
+			AppConfig.findOne { 'subscrible_id': req.params.subscriber_id }, (err, it) ->
 				if err
 					res.json error: err
 				else                                    
 					if it
-						settings.AppConfig.remove {_id: it._id}, (errr) ->
+						AppConfig.remove {_id: it._id}, (errr) ->
 							if errr
-								console.log("##### error = #{errr}")
+								logger.info("remove subscriber error: #{errr}")
 								res.json error: errr.message, 500								
 							else
 								mongo_deleted = true
 								res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
 					else
-						logger.error "No subscriber found #{req.params.subscriber_id} on mongo"
+						logger.error "No subscriber #{req.params.subscriber_id} found to mongo remove"
 						res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
 
 
@@ -360,21 +360,21 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 				req.subscriber.delete (deleted) ->
 
 					if not deleted
-						logger.error "No subscriber #{req.subscriber.id} on redis"
+						logger.error "No subscriber #{req.subscriber.id} remove. Not deleted"
 					else
 						subscriber_deleted = true
 
 					subscriber_remove_func()
 
 			else
-				logger.error "No subscriber found #{req.params.subscriber_id} on redis"
+				logger.error "No subscriber #{req.subscriber.id} found to redis remove"
 				subscriber_remove_func()
 																							 
 	app.get '/apps/message', authorize('admin'), (req, res) ->
 		
 		channels = []
 
-		settings.AppConfig.find (err, items) ->
+		AppConfig.find (err, items) ->
 			if err
 				res.json error: err
 				return
@@ -393,12 +393,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		channel = req.query.channel
 
 		if !channel
-			res.json({error: true, message: 'channel param is require'})
+			res.json error: "channels param is required", 500
 			return
 
-		settings.AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
+		AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
+			
 			if err
 				res.json error: err
+				return
 			
 			users = []
 			accounts = {}
@@ -427,7 +429,6 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 				accounts[it.app_user_email].push(user)
 
-
 			res.json(accounts)
 
 	app.get '/apps/:channel', authorize('publish'), (req, res) ->
@@ -435,12 +436,13 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		channel = req.params.channel
 
 		if !channel || channel.trim().length == 0
-			res.json({error: true, message: 'channel param is require'})
+			res.json error: "channels param is required", 500
 			return
 			
-		settings.AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
+		AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"} }).exec (err, items) ->
 			if err
 				res.json error: err
+				return
 			
 			users = []
 			accounts = {}
@@ -476,14 +478,15 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 	subscribers = (body, res, end) ->
 
-		logger.verbose "Registering subscriber: " + JSON.stringify body
+		logger.verbose "Registering subscriber: #{JSON.stringify(body)}"
+
 		try
 			fields = filterFields(body)
 			createSubscriber fields, (subscriber, created) ->
 				subscriber.get (info) ->
 					info.id = subscriber
 
-					console.log("### subscriber.id=#{subscriber.id}")
+					logger.info("subscriber #{subscriber.id} register created: #{created}")
 
 					if end
 						end(subscriber)
@@ -492,6 +495,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 					res.header 'Location', "/subscriber/#{subscriber.id}"                    
 					res.json {}, if created then 201 else 200
 		catch error
+
 			logger.error "Creating subscriber failed: #{error.message}"
 
 			if end
@@ -639,7 +643,21 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 	# Publish an event
 	app.post '/event/:event_id', authorize('publish'), (req, res) ->
 		res.send 204
-		console.log("message = #{JSON.stringify(req.body)}")
+		logger.info("********************* new event publish ***********************")
+		logger.info("#{JSON.stringify(req.body)}")
+		logger.info("********************* new event publish ***********************")
+
+		message = new Message({
+			sender: req.user
+			eventName: req.params.event_id
+			content: req.body
+			createdAt: new Date()
+		})
+
+		message.save (error) ->
+			if error
+				logger.error "error save event message: #{error} "
+
 		eventPublisher.publish(req.event, req.body)
 
 	# Delete an event
