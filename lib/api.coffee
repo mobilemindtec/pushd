@@ -650,7 +650,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 		message = new Message({
 			sender: req.user
 			eventName: req.params.event_id
-			content: req.body
+			content: JSON.stringify(req.body)
 			createdAt: new Date()
 		})
 
