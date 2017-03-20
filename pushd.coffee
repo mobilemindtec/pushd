@@ -158,6 +158,7 @@ authorize = (realm) ->
                 res.json error: 'Unauthorized', 403
                 return
 
+            logger.verbose "autentication ok"
             next()
             
     else if allow_from = settings.server?.acl?[realm]
