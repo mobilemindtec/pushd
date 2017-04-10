@@ -131,6 +131,7 @@ authorize = (realm) ->
                 res.status(401).send("Authorization Required")
                 return
 
+            logger.verbose "auth = #{auth}"
             credentials = new Buffer(auth.split(" ").pop(), "base64").toString("ascii").split(":")
 
             username = credentials[0] 
