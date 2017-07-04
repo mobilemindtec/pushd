@@ -7,46 +7,36 @@ class PushServiceFCM
     constructor: (conf, @logger, tokenResolver) ->
         conf.concurrency ?= 10
         @driver = new FCM(conf.key, conf.options)
-        @multicastQueue = {}
 
     push: (subscriber, subOptions, payload) ->
         subscriber.get (info) =>
-            messageKey = "#{payload.id}-#{info.lang or 'int'}-#{!!subOptions?.ignore_message}"
+            
+            note = { notification: {}, data: {}, to: info.token }
+            note.collapseKey = payload.event?.name
+            if subOptions?.ignore_message isnt true
+                if title = payload.localizedTitle(info.lang)
+                    note.notification.title = title
+                if message = payload.localizedMessage(info.lang)
+                    note.notification.body = message
 
-            # Multicast supports up to 1000 subscribers
-            if messageKey of @multicastQueue and @multicastQueue[messageKey].tokens.length >= 1000
-                @.send messageKey
+                if payload.color
+                    note.notification.color = payload.color
 
-            if messageKey of @multicastQueue
-                @multicastQueue[messageKey].tokens.push(info.token)
-                @multicastQueue[messageKey].subscribers.push(subscriber)
-            else
-                note = { notification: {}, data: {}, to: info.token }
-                note.collapseKey = payload.event?.name
-                if subOptions?.ignore_message isnt true
-                    if title = payload.localizedTitle(info.lang)
-                        note.notification.title = title
-                    if message = payload.localizedMessage(info.lang)
-                        note.notification.body = message
+                if payload.icon
+                    note.notification.icon = payload.icon
 
-                    if payload.color
-                        note.notification.color = payload.color
+            for key, value of payload.data
+                note.data[key] = value
 
-                    if payload.icon
-                        note.notification.icon = payload.icon
+            message = {tokens: [info.token], subscribers: [subscriber], note: note}
 
-                for key, value of payload.data
-                    note.data[key] = value
+            #console.log("-------------------------------")
+            #console.log("message=" + JSON.stringify(message.note))
+            #console.log("-------------------------------")
 
-                @multicastQueue[messageKey] = {tokens: [info.token], subscribers: [subscriber], note: note}
+            @.send message
 
-                # Give half a second for tokens to accumulate
-                @multicastQueue[messageKey].timeoutId = setTimeout (=> @.send(messageKey)), 500
-
-    send: (messageKey) ->
-        message = @multicastQueue[messageKey]
-        delete @multicastQueue[messageKey] 
-        clearTimeout message.timeoutId
+    send: (message) ->
 
         @driver.send message.note, (err, multicastResult) =>
             
@@ -62,7 +52,6 @@ class PushServiceFCM
 
     handleResult: (result, subscriber) ->
 
-        console.log(result)
         if result.registration_id?
             # Remove duplicated subscriber for one device
             subscriber.delete() if result.registration_id isnt subscriber.info.token

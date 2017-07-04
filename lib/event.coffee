@@ -86,6 +86,7 @@ class Event
     forEachSubscribers: (action, finished) ->
         Subscriber = require('./subscriber').Subscriber
         if (subscriber = @unicastSubscriber())?
+
             # if event is unicast, do not treat score as subscription option, ignore it
             action(subscriber, {}, -> finished(1) if finished)
         else

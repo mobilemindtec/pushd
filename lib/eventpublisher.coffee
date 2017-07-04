@@ -7,7 +7,7 @@ class EventPublisher extends events.EventEmitter
 
     publish: (event, data, cb) ->
 
-        console.log('##### event publish data =' + JSON.stringify(data))
+        #console.log('##### event publish data =' + JSON.stringify(data))
         #console.log(cb)
         
         try
@@ -44,11 +44,15 @@ class EventPublisher extends events.EventEmitter
 
             protoCounts = {}
             event.forEachSubscribers (subscriber, subOptions, done) =>
+
+                if data["data.user_id"]
+                    if "#{subscriber.id}" != "#{data['data.user_id']}"
+                        return done()
+
                 # action
                 subscriber.get (info) =>
 
-                    console.log("### proto=#{info.proto}")
-
+                    
                     if info?.proto?
                         if protoCounts[info.proto]?
                             protoCounts[info.proto] += 1
@@ -68,7 +72,6 @@ class EventPublisher extends events.EventEmitter
                         cb(totalSubscribers) if cb
                 else
                     # if there is no subscriber, cleanup the event
-                    console.log("deletando!!!")
                     event.delete =>
                         cb(0) if cb
 
