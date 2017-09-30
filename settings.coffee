@@ -119,7 +119,8 @@ console.log("---------------------------")
 default_gcm_apps = configs.apps.gcm
 
 for it in default_gcm_apps
-	for sufix in ["-dev", ""]
+	#for sufix in ["-dev", ""]
+	for sufix in [""]
 		console.log("create GCM to gcm-#{it.name}#{sufix}")
 		exports["gcm-#{it.name}#{sufix}"] = 
 			enabled: yes
@@ -132,7 +133,8 @@ console.log("---------------------------")
 default_fcm_apps = configs.apps.fcm
 
 for it in default_fcm_apps
-	for sufix in ["-dev", ""]
+	#for sufix in ["-dev", ""]
+	for sufix in [""]
 		console.log("create FCM to fcm-#{it.name}#{sufix}")
 		exports["fcm-#{it.name}#{sufix}"] = 
 			enabled: yes
