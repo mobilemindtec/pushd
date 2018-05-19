@@ -21,9 +21,9 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 	app.post '/apps/register', authorize('anonymous'), (req, res) ->
 		
-		#logger.info("======================================")
-		#logger.info("============== body = #{JSON.stringify(req.body)}")
-		#logger.info("======================================")
+		logger.info("======================================")
+		logger.info("============== body = #{JSON.stringify(req.body)}")
+		logger.info("======================================")
 
 
 		configs = settings.configs
@@ -61,11 +61,11 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
 		 
 		if !server_name_sufix
-			res.json error: "server name not found to appId #{appid}", 500
+			res.json error: "server name not found to appId #{appId}", 500
 			return
 
 		if !channels_sufix
-			res.json error: "channels not found to appId #{appid}", 500
+			res.json error: "channels not found to appId #{appId}", 500
 			return
 
 
