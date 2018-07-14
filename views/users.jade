@@ -1,75 +1,119 @@
 extend extra/layout
 
-block css-inline
+block css
   style().
-    .status-metro{
-      margin: 2px;
-    }
-
-    .delete-all{
-      color: #FFFFFF !important;
+    table tbody tr td{
+      font-size: 12px;
     }
 
 block content
 
-  .large-12.columns
-    .box
-      .box-header.bg-transparent
-                                
-        // tools box
-        h3.box-title
-          i.icon-menu
-          span Registers
-      // /.box-header
-      .box-body(style='display: block;')
-        table(style='width:100%;')
-          thead
-            tr
-              th Server Name
-              th Subcrible ID
-              th APP ID
-              th Channels
-              th User Email
-              th User Name
-              th Debug
-              th Token
-          tbody
-            each it in items
-              tr
-                td #{it.server_name}
-                td #{it.subscrible_id}
-                td #{it.app_id}
-                td 
-                  each p in it.subscrible_channels.split(',')
-                    -if(p)
-                      span.status-metro.status-disabled #{p}
-                td #{it.app_user_email}
-                td #{it.app_user_name}
-                td
-                  -if(it.app_debug == true) 
-                    span.status-metro.status-active Yes
-                  -else
-                    span.status-metro.status-suspended Yes
-                td
-                  a.btn.btn-tiny.btn-token(href='#', data-token='#{it.app_hash}')
-                    i.fontello-key-1.tooltipstered
+  .d-flex.justify-content-between.flex-wrap.flex-md-nowrap.align-items-center.pt-3.pb-2.mb-3.border-bottom
+    h1.h2 Usuários Registrados
 
-
-    #tokenModal.reveal-modal.medium(data-reveal='')
-      h2 Token
-      p      
-      a.close-reveal-modal ×
+  .row
+    .col-12
+      table.table
+        thead
+          tr
+            th Created At
+            th Updated At
+            th User Email
+            th User Name
+            th App Id
+            th Channels
+            th Debug
+            th Server Name
+            th Subcrible ID
+            th Device Token
+        tbody
 
 block js-inline
   script().
     $(document).ready(function(){
 
-      $('.btn-token').click(function(){
+      $('table').DataTable({
+        ajax: function(data, callback, settings){
 
-        $('#tokenModal').find('p').text($(this).data('token'))
+          var params = settings.oAjaxData
+          var args = {            
+            limit: params.length,
+            offset: params.start,
+            order_column: params.columns[params.order[0].column].data,
+            order_sort: params.order[0].dir,
+            search: params.search.value
+          }
 
-        $('#tokenModal').foundation('reveal', 'open');
+          $.ajax({
+            url: "/apps/users",
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify(args),
+            success: function(data){
 
+              if (data.error){
+                alert(data.error)
+              }
+              else{
+
+                var result = {
+                  data: data.results,
+                  recordsTotal: data.totalCount,
+                  recordsFiltered: data.totalCount,
+                }
+
+                callback(result);
+              }
+            },
+            error: function(x){
+              alert('Erro ao executar requisição')
+            }
+          })          
+
+        },
+        processing: true,
+        serverSide: true,
+        pageLength: 25,
+        responsive: true,
+        stateSave: false,
+        pagingType: "full_numbers",
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tudo"]],
+        columns: [
+          { "data": "createdAt" },
+          { "data": "updatedAt" },
+          { "data": "app_user_email" },
+          { "data": "app_user_name" },
+          { "data": "app_id" },
+          { "data": "subscrible_channels" },
+          { "data": "app_debug" },
+          { "data": "server_name" },
+          { "data": "subscrible_id" },
+          { "data": "app_hash" }
+        ],
+        aoColumns: [
+          { "sType": "num-html", "data": "createdAt" },
+          { "sType": "num-html", "data": "updatedAt" },
+          { "sType": "num-html", "data": "app_user_email" },
+          { "sType": "num-html", "data": "app_user_name" },
+          { "sType": "num-html", "data": "app_id" },
+          { "sType": "num-html", "data": "subscrible_channels" },
+          { "sType": "num-html", "data": "app_debug" },
+          { "sType": "num-html", "data": "server_name" },
+          { "sType": "num-html", "data": "subscrible_id" },
+          { "sType": "num-html", "data": "app_hash" }
+        ],
+        aaSorting: [ 0, "desc" ],
+        createdRow: function(row, data, index){
+          $('td', row).eq(0).text(moment(data.createdAt).format('DD/MM/YYYY HH:mm'))
+          $('td', row).eq(1).text(moment(data.updatedAt).format('DD/MM/YYYY HH:mm'))
+
+        }
       })
 
     })
+
+      
+
+
+

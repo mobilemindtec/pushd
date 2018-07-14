@@ -25,7 +25,7 @@ exports.server =
 	# redis_socket: '/var/run/redis/redis.sock'
 	# redis_auth: 'password'
 	# redis_db_number: 2
-	listen_ip: configs.listen_ip
+	listen_ip: if process.env["NODE_ENV"] is 'production' then configs.listen_ip else '127.0.0.1'
 	tcp_port: 3000
 	udp_port: 3000
 	access_log: yes
@@ -65,6 +65,10 @@ certificados_development = configs.apps.apns.development
 certificados_production = configs.apps.apns.production
 
 console.log("***************************")
+
+if process.env["NODE_ENV"] isnt 'production'
+	configs.apps.apns.development_certs_path = "#{__dirname}/certificados/development/ios"
+	configs.apps.apns.production_certs_path = "#{__dirname}/certificados/production/ios"
 
 for cert_sufix in certificados_development
 	console.log "create APNS development to #{cert_sufix}-dev"
@@ -220,6 +224,11 @@ exports['logging'] = [
 
 
 mongoose = require 'mongoose'
+
+if process.env["NODE_ENV"] isnt 'production'
+	configs.mongo.connection_string = "mongodb://localhost/pushd"
+
+console.log "connect in #{configs.mongo.connection_string}, #{configs.mongo.user}"
 mongoose.connect(configs.mongo.connection_string, { user: configs.mongo.user, pass: configs.mongo.password }, (err) ->
 
 	if err

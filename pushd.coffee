@@ -139,7 +139,8 @@ authorize = (realm) ->
 
             if !checkUserAndPassword(username, password)
                 logger.error "Bad Credentials, username: #{username},  host: #{req.headers.host}"
-                res.json error: 'Unauthorized', 403
+                res.set("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
+                res.status(401).send("Authorization Required")
                 return
 
             req.user = username
@@ -150,13 +151,15 @@ authorize = (realm) ->
             if not req.user?
                 logger.error "User not authenticated"
                 logger.error "host: #{req.headers.host}"
-                res.json error: 'Unauthorized', 403
+                res.set("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
+                res.status(401).send("Authorization Required")
                 return
 
             allowedRealms = settings.server.auth[req.user]?.realms or []
             if realm not in allowedRealms
                 logger.error "No access to #{realm} for #{req.user}, allowed: #{allowedRealms}, host: #{req.headers.host}"
-                res.json error: 'Unauthorized', 403
+                res.set("WWW-Authenticate", "Basic realm=\"Authorization Required\"")
+                res.status(401).send("Authorization Required")
                 return
 
             logger.verbose "autentication ok"

@@ -2,25 +2,39 @@ extend extra/layout
 
 block content
 
-  .large-9.columns
-    
-    a.button.expand(href='http://push.mobilemind.com.br/apps/register/all') 
-      | Register all
+  .d-flex.justify-content-between.flex-wrap.flex-md-nowrap.align-items-center.pt-3.pb-2.mb-3.border-bottom
+    h1.h2 Home
+  
+  .row
+    .col-12
+      p.text-center 
+        | Força o registro de todos os usuários de todos os apps
+  .row
+    .col-md-6.col-12.offset-3
+      a.btn.btn-primary.btn-lg.btn-block(href='/apps/register/all') 
+        | Register all
 
-    a.button.expand(href='http://push.mobilemind.com.br/apps/remove/empty') 
-      | Remove empty subscriber id
-    
-    a.button.expand(href='http://push.mobilemind.com.br/apps/show/all') 
-      | Show all
+  .row.mt-4
+    .col-12
+      p.text-center 
+        | Remove todos inscritos com ID vazio
+  .row
+    .col-md-6.col-12.offset-3
+      a.btn.btn-primary.btn-lg.btn-block(href='/apps/remove/empty') 
+        | Remove empty subscriber ID
+      
+  .row.mt-4
+    .col-md-6.col-12.offset-3
+      a.btn.btn-primary.btn-lg.btn-block(href='/apps/show/all') 
+        | Show all Subscribles
 
-    a.button.expand(href='http://push.mobilemind.com.br/apps/users') 
-      | Users
 
-    a.button.expand(href='http://push.mobilemind.com.br/apps/delete/all') 
-      | Remove all
+  .row.mt-4
+    .col-md-6.col-12.offset-3
+      a.btn.btn-primary.btn-lg.btn-block(href='/apps/remove/') 
+        | Remove by Subscriber ID
 
-    a.button.expand(href='http://push.mobilemind.com.br/apps/remove/') 
-      | Remove by subscriber id
-
-    a.button.expand(href='http://push.mobilemind.com.br/apps/users-by-channel?channel=') 
-      | List users by channel
+  .row.mt-4
+    .col-md-6.col-12.offset-3
+      a.btn.btn-primary.btn-lg.btn-block(href='/apps/users-by-channel?channel=') 
+        | List users by channel

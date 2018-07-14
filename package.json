@@ -42,13 +42,12 @@
     "async": "~0.2.10",
     "express": "~3.20.2",
     "body-parser": "~1.9.0",
-    "hiredis": "~0.1.17",
+    "hiredis": "~0.5.0",
     "redis": "~0.12.1",
     "netmask": "~1.0.4",
     "winston": "~0.7.3",
     "wns": "git://github.com/futurice/wns.git#28bfe39a3be8c64f3d72b7c7a5cac77c049b137a",
-    "mongoose": "^3.8.18",
-    "connect-mongo": "^0.8.2",
+    "mongoose": "^5.2.3",
     "fcm-node": "^1.0.16"
   },
   "devDependencies": {

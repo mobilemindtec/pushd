@@ -1,0 +1,96 @@
+extend extra/layout
+
+block css
+  style().
+    table tbody tr td{
+      font-size: 12px;
+    }
+
+block content
+
+  .d-flex.justify-content-between.flex-wrap.flex-md-nowrap.align-items-center.pt-3.pb-2.mb-3.border-bottom
+    h1.h2 Mensagens Enviadas
+
+  .row
+    .col-12
+      table.table
+        thead
+          tr
+            th Created At
+            th Sender
+            th Event
+            th Content
+        tbody
+
+block js-inline
+  script().
+    $(document).ready(function(){
+
+      $('table').DataTable({
+        ajax: function(data, callback, settings){
+
+          var params = settings.oAjaxData
+          var args = {            
+            limit: params.length,
+            offset: params.start,
+            order_column: params.columns[params.order[0].column].data,
+            order_sort: params.order[0].dir,
+            search: params.search.value
+          }
+
+          $.ajax({
+            url: "/apps/messages",
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify(args),
+            success: function(data){
+
+              if (data.error){
+                alert(data.error)
+              }
+              else{
+
+                var result = {
+                  data: data.results,
+                  recordsTotal: data.totalCount,
+                  recordsFiltered: data.totalCount,
+                }
+
+                callback(result);
+              }
+            },
+            error: function(x){
+              alert('Erro ao executar requisição')
+            }
+          })          
+
+        },
+        processing: true,
+        serverSide: true,
+        pageLength: 25,
+        responsive: true,
+        stateSave: false,
+        pagingType: "full_numbers",
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Tudo"]],
+        columns: [
+          { "data": "createdAt" },
+          { "data": "sender" },
+          { "data": "eventName" },
+          { "data": "content" }
+        ],
+        aoColumns: [
+          { "sType": "num-html", "data": "createdAt", style: 'width: 120px' },
+          { "sType": "num-html", "data": "sender" },
+          { "sType": "num-html", "data": "eventName" },
+          { "sType": "num-html", "data": "content" }
+        ],
+        aaSorting: [ 0, "desc" ],
+        createdRow: function(row, data, index){
+          $('td', row).eq(0).text(moment(data.createdAt).format('DD/MM/YYYY HH:mm'))
+        }
+      })
+
+    })
+
+      
