@@ -352,6 +352,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
       if err
         res.json({error: true, message: err})
       else
+        AppConfig.countDocuments = AppConfig.countDocuments || AppConfig.count
         AppConfig.countDocuments args, (err, count) ->
           if err
             res.json({error: true, message: err})
@@ -430,6 +431,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
       if err
         res.json({error: true, message: err})
       else
+        Message.countDocuments = Message.countDocuments || Message.count
         Message.countDocuments args, (err, count) ->
           if err
             res.json({error: true, message: err})
