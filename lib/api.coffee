@@ -279,7 +279,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             message.app_user_name = appConfig.app_user_name
             message.app_user_email = appConfig.app_user_email
             message.app_debug = appConfig.app_debug
-            message.subscriber_id = appConfig.subscrible_id
+
+
+            subscrible_id = appConfig.subscrible_id
+
+            if not subscrible_id or subscrible_id.trim() is ""
+              subscrible_id = appConfig.subscriber_id
+
+            message.subscrible_id = subscrible_id
 
             messages.push message
 
@@ -303,7 +310,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
           message.app_user_name = appConfig.app_user_name
           message.app_user_email = appConfig.app_user_email
           message.app_debug = appConfig.app_debug
-          message.subscriber_id = appConfig.subscrible_id
+          
+          subscrible_id = appConfig.subscrible_id
+
+          if not subscrible_id or subscrible_id.trim() is ""
+            subscrible_id = appConfig.subscriber_id
+
+          message.subscrible_id = subscrible_id
+
           messages.push message
 
         res.json(messages)                    
@@ -478,9 +492,14 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         if !accounts[it.app_user_email]
           accounts[it.app_user_email] = []
 
+
+        subscrible_id = it.subscrible_id
+
+        if not subscrible_id or subscrible_id.trim() is ""
+          subscrible_id = it.subscriber_id
+
         user = {                        
-          subscrible_id: it.subscrible_id
-          subscriber_id: it.subscrible_id
+          subscrible_id: subscrible_id
           name: it.app_user_name
           email: it.app_user_email
           production: !it.app_debug
@@ -517,12 +536,21 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
       for it in items            
         
+        subscrible_id = it.subscrible_id
+
+        if not subscrible_id or subscrible_id.trim() is "" 
+          subscrible_id = it.subscriber_id
+
+        if not subscrible_id or subscrible_id.trim() is "" 
+          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.it.app_user_email}")
+          continue
+        
+
         if !accounts[it.app_user_email]
           accounts[it.app_user_email] = []
 
         user = {                        
-          subscrible_id: it.subscrible_id
-          subscriber_id: it.subscrible_id
+          subscrible_id: subscrible_id
           name: it.app_user_name
           email: it.app_user_email
           production: !it.app_debug
