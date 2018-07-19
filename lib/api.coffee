@@ -366,12 +366,21 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
       if err
         res.json({error: true, message: err})
       else
+
+        items = []
+
+        for it in results
+          item = it.toJSON()
+          if not it.app_hash
+            item.app_hash = ""
+          items.push(item)
+
         AppConfig.countDocuments = AppConfig.countDocuments || AppConfig.count
         AppConfig.countDocuments args, (err, count) ->
           if err
             res.json({error: true, message: err})
           else
-            res.json({results: results, totalCount: count})      
+            res.json({results: items, totalCount: count})      
     
   app.get '/apps/remove/:subscriber_id', authorize('admin'), (req, res) ->    
 
