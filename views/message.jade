@@ -141,16 +141,19 @@ block js-inline
           'title': 'Notificação Teste'
         }
 
-        if(user = 'none'){
-          post(dataPost)
-        }else{
-          var devices = window.accounts[key]
-          for(var i = 0; i < devices.length; i++){
-            var item = devices[i]
+        //if(user == 'none'){
+        //  post(dataPost)
+        //}else{
+        var devices = window.accounts[user]
+        for(var i = 0; i < devices.length; i++){
+          var item = devices[i]
+
+          if(item.subscrible_id && item.subscrible_id.trim().length > 0){
             dataPost['data.user_id'] = item.subscrible_id
             post(dataPost)
           }
         }
+        //}
 
         /*
 
