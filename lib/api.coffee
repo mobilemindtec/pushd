@@ -507,6 +507,10 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         if not subscrible_id or subscrible_id.trim() is ""
           subscrible_id = it.subscriber_id
 
+        if not subscrible_id or subscrible_id.trim() is "" 
+          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.it.app_user_email}")
+          continue
+
         user = {                        
           subscrible_id: subscrible_id
           name: it.app_user_name
