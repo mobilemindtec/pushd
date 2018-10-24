@@ -3,3 +3,6 @@ node_modules/
 *.swp
 certificados/
 configs.json
+*.js
+*.tar.gz
+*rdb

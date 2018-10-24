@@ -94,7 +94,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
     else if app_type == 'android'
 
       if !proto || proto == ""
-        proto = "gcm"
+        proto = "fcm"
 
       if appDebug
         server_name = "#{proto}-#{server_name_sufix}-dev"
@@ -508,7 +508,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
           subscrible_id = it.subscriber_id
 
         if not subscrible_id or subscrible_id.trim() is "" 
-          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.it.app_user_email}")
+          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.app_user_email}")
           continue
 
         user = {                        
@@ -555,7 +555,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
           subscrible_id = it.subscriber_id
 
         if not subscrible_id or subscrible_id.trim() is "" 
-          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.it.app_user_email}")
+          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.app_user_email}")
           continue
         
 
