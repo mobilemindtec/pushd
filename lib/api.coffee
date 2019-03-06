@@ -583,6 +583,63 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
 
       res.json(accounts)
 
+  app.get '/apps/:channel/:username', authorize('publish'), (req, res) ->
+        
+    channel = req.params.channel
+    username = req.params.username
+
+    if !channel || channel.trim().length == 0
+      res.json error: "channels param is required", 500
+      return
+      
+    if !username || username.trim().length == 0
+      res.json error: "channels param is required", 500
+      return
+
+    AppConfig.find({subscrible_channels: {$regex : ".*#{channel},.*"}, app_user_email: username }).exec (err, items) ->
+      if err
+        res.json error: err
+        return
+      
+      users = []
+      accounts = {}
+
+      for it in items            
+        
+        subscrible_id = it.subscrible_id
+
+        if not subscrible_id or subscrible_id.trim() is "" 
+          subscrible_id = it.subscriber_id
+
+        if not subscrible_id or subscrible_id.trim() is "" 
+          logger.info("not subscrible_id valid to user #{it.app_user_name} - #{it.app_user_email}")
+          continue
+        
+
+        if !accounts[it.app_user_email]
+          accounts[it.app_user_email] = []
+
+        user = {                        
+          subscrible_id: subscrible_id
+          name: it.app_user_name
+          email: it.app_user_email
+          production: !it.app_debug
+          ios: it.server_name.indexOf('apns-') > -1
+          android: it.server_name.indexOf('gcm-') > -1 || it.server_name.indexOf('fcm-') > -1
+          deviceId: it.deviceId
+        }
+
+        if it.createdAt
+          user.createdAt = it.createdAt.toISOString().slice(0, 10)
+
+        if it.updatedAt
+          user.updatedAt = it.updatedAt.toISOString().slice(0, 10)
+
+        accounts[it.app_user_email].push(user)
+
+
+      res.json(accounts)      
+
   # subscriber registration
 
   subscribers = (body, res, end) ->
