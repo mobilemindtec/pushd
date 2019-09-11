@@ -432,17 +432,17 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
         subscriber.get (sub) ->
 
           if sub
-            req.subscriber.delete (deleted) ->
+            subscriber.delete (deleted) ->
 
               if not deleted
-                logger.error "No subscriber #{req.subscriber.id} remove. Not deleted"
+                logger.error "No subscriber #{subscriber.id} remove. Not deleted"
               else
                 subscriber_deleted = true
 
               subscriber_remove_func()
 
           else
-            logger.error "No subscriber #{req.subscriber.id} found to redis remove"
+            logger.error "No subscriber #{subscriber.id} found to redis remove"
             subscriber_remove_func()
 
     

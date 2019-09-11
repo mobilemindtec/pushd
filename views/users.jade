@@ -142,14 +142,14 @@ block js-inline
           if (("" + ($(v).data('id'))) === ("" + id)) {
             
               
-              console.log("found ok")
-              console.log(v)
-              console.log($(v).next())
-              console.log($(v).next().find('.tb-remove'))
+              ///console.log("found ok")
+              ///console.log(v)
+              ///console.log($(v).next())
+              ///console.log($(v).next().find('.tb-remove'))
 
               $(v).next().find('.tb-remove').attr('data-id', id);
 
-              return $(v).next().find('.tb-remove').on('click', function(el) {
+              $(v).next().find('.tb-remove').on('click', function(el) {
 
                 if(confirm('O registro será removido. Você confirma?')){
                   window.location.href = "/apps/user/remove/" + ($(el).data('id'));
