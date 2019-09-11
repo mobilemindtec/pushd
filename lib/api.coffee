@@ -5,6 +5,7 @@ settings = require '../settings'
 eventModule = require './event'
 Subscriber = require('./subscriber').Subscriber
 fs = require('fs');
+mongoose = require 'mongoose'
 
 AppConfig = settings.AppConfig
 Message = settings.Message
@@ -293,6 +294,24 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             for_each idx++, items, callback, done
 
         for_each idx++, items, callback, done
+
+  app.get '/apps/remove/empty', (req, res) ->
+
+    settings.AppConfig.find (err, items) ->
+      if err
+        res.json error: err
+      else                
+        for it in items
+          if !it.subscrible_id || it.subscrible_id.trim() == ""
+            settings.AppConfig.remove {_id: it._id}, (errr) ->
+              if errr
+                console.log("##### error = #{errr}")
+                res.json error: errr.message, 500                         
+
+      
+        setTimeout(() ->
+          res.redirect('/apps/users')
+        , 500)
         
   app.get '/apps/show/all', authorize('admin'), (req, res) ->
 
@@ -381,6 +400,51 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
             res.json({error: true, message: err})
           else
             res.json({results: items, totalCount: count})      
+
+  app.get '/apps/user/remove/:id', authorize('admin'), (req, res) ->    
+
+    subscriber_deleted = false
+    mongo_deleted = false
+
+    logger.info("trying remove subscriber _id #{req.params.id}")
+    
+    AppConfig.findOne { '_id': new mongoose.Types.ObjectId(req.params.id)  }, (err, it) ->
+      if err
+        res.json error: err
+
+      else if !it
+        logger.error "No subscriber _id #{req.params.id} found to mongo remove"
+        res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted
+      else
+        subscriber_remove_func = () ->
+
+          AppConfig.remove {_id: it._id}, (errr) ->
+            if errr
+              logger.info("remove subscriber error: #{errr}")
+              res.json error: errr.message, 500               
+            else
+              mongo_deleted = true
+              res.json 'redis-deleted': subscriber_deleted, 'mongo-deleted': mongo_deleted            
+
+        
+        subscriber = new Subscriber(redis, it.subscrible_id)
+
+        subscriber.get (sub) ->
+
+          if sub
+            req.subscriber.delete (deleted) ->
+
+              if not deleted
+                logger.error "No subscriber #{req.subscriber.id} remove. Not deleted"
+              else
+                subscriber_deleted = true
+
+              subscriber_remove_func()
+
+          else
+            logger.error "No subscriber #{req.subscriber.id} found to redis remove"
+            subscriber_remove_func()
+
     
   app.get '/apps/remove/:subscriber_id', authorize('admin'), (req, res) ->    
 

@@ -26,6 +26,7 @@ block content
             th Server Name
             th Subcrible ID
             th Device Token
+            th
         tbody
 
 block js-inline
@@ -101,13 +102,26 @@ block js-inline
           { "sType": "num-html", "data": "app_debug" },
           { "sType": "num-html", "data": "server_name" },
           { "sType": "num-html", "data": "subscrible_id" },
-          { "sType": "num-html", "data": "app_hash" }
+          { "sType": "num-html", "data": "app_hash" },
+        ],
+        columnDefs: [
+          {
+            targets: 10,
+            data: null,
+            className: 'text-center',
+            defaultContent: "<a href='#' title='Remover' class='tb-item-remove'><i class='fa fa-trash red font-red text-danger bigger-160'></i></a>"
+          }
         ],
         aaSorting: [ 0, "desc" ],
         createdRow: function(row, data, index){
           $('td', row).eq(0).text(moment(data.createdAt).format('DD/MM/YYYY HH:mm'))
           $('td', row).eq(1).text(moment(data.updatedAt).format('DD/MM/YYYY HH:mm'))
 
+          $('td', row).eq(10).find('a').attr('href', "/apps/user/remove/" + data._id)
+          $('td', row).eq(10).find('a').on('click', function(){
+            return confirm('O registro será removido. Você confirma?')
+          })
+                        
         }
       })
 
