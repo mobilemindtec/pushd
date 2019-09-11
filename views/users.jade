@@ -33,7 +33,7 @@ block js-inline
   script().
     $(document).ready(function(){
 
-      $('table').DataTable({
+      var datatable = $('table').DataTable({
         ajax: function(data, callback, settings){
 
           var params = settings.oAjaxData
@@ -114,6 +114,9 @@ block js-inline
         ],
         aaSorting: [ 0, "desc" ],
         createdRow: function(row, data, index){
+
+          $(row).attr('data-id', data._id)
+
           $('td', row).eq(0).text(moment(data.createdAt).format('DD/MM/YYYY HH:mm'))
           $('td', row).eq(1).text(moment(data.updatedAt).format('DD/MM/YYYY HH:mm'))
 
@@ -124,6 +127,32 @@ block js-inline
                         
         }
       })
+
+
+      datatable.on('responsive-display', function(e, datatable, row, showHide, update) {
+        var id;
+        id = row.data().id;
+        return $('tr').each(function(k, v) {
+          
+          if (("" + ($(v).data('id'))) === ("" + id)) {
+            
+            
+              $(v).next().find('.tb-remove').attr('data-id', id);
+
+              return $(v).next().find('.tb-remove').on('click', function(el) {
+
+                if(confirm('O registro será removido. Você confirma?')){
+                  window.location.href = "/apps/user/remove/" + ($(el).data('id'));
+                } 
+
+              });
+            
+          }
+
+        });
+        
+      });
+
 
     })
 
