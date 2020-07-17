@@ -150,7 +150,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
                   on_subscribe(appConfig, req, res)
               else              
                 logger.info("** subscrible_id already exists")
-                res.json status: 200 
+                res.json {status: 200, subscrible_id: appConfig.subscrible_id} 
         
         if appConfig.app_hash != data.app_hash
           logger.info("** subscriber #{appConfig.subscrible_id} with different hash ")
@@ -218,7 +218,7 @@ exports.setupRestApi = (redis, app, createSubscriber, getEventFromId, authorize,
           logger.error("error on update subscriber to set id: #{body}")
           callback status: 301, message: "error on update subscriber to set id"
         else
-          callback status: 200
+          callback {status: 200, subscrible_id: subscriber.id} 
       
       events = appConfig.subscrible_channels.split(",")
 
